@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO 廣告圖修正器 v5.3</title>
+    <title>MOMO 廣告圖修正器 v5.4</title>
     <style>
         * {
             margin: 0;
@@ -761,6 +761,8 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+            transform-origin: center center;
+            will-change: transform;
         }
 
         .editor-controls {
@@ -818,7 +820,8 @@
             outline: none;
             -webkit-appearance: none;
             cursor: pointer;
-            transition: background 0.15s ease;
+            transition: background 0.1s ease;
+            will-change: background;
         }
 
         input[type="range"]::-webkit-slider-thumb {
@@ -829,9 +832,11 @@
             border-radius: 50%;
             background: linear-gradient(145deg, #667eea, #5568d3);
             cursor: grab;
-            transition: all 0.15s ease;
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
             border: 2px solid white;
+            will-change: transform, box-shadow;
         }
 
         input[type="range"]::-webkit-slider-thumb:active {
@@ -853,7 +858,9 @@
             cursor: grab;
             border: 2px solid white;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-            transition: all 0.15s ease;
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, box-shadow;
         }
 
         input[type="range"]::-moz-range-thumb:active {
@@ -997,7 +1004,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="version-badge">v5.3</div>
+            <div class="version-badge">v5.4</div>
             <h1>🎯 MOMO 廣告圖修正器</h1>
             <p>自動調整 × 批次處理 × 手動微調</p>
         </div>
@@ -1097,7 +1104,7 @@
             <div>
                 Made with <a href="https://claude.ai" target="_blank">Claude</a> | 
                 Created by <strong>Alishia</strong> | 
-                Version <strong>v5.3 FINAL</strong>
+                Version <strong>v5.4</strong>
             </div>
         </div>
     </div>
@@ -1351,11 +1358,89 @@
         function sanitizeFilename(filename) {
             let name = filename.replace(/\.[^/.]+$/, '');
             
-            // 移除所有中文字元
+            // 中文翻英對照表（擴充版）
+            const chineseToEnglish = {
+                // 產品類型
+                '膠囊': 'capsule',
+                '爆水': 'baoshui',
+                '洗髮': 'shampoo',
+                '精華': 'essence',
+                '乳液': 'lotion',
+                '面霜': 'cream',
+                '面膜': 'mask',
+                '化妝水': 'toner',
+                '洗面乳': 'cleanser',
+                '卸妝': 'remover',
+                '防曬': 'sunscreen',
+                '眼霜': 'eyecream',
+                '護髮': 'conditioner',
+                '潤髮': 'conditioner',
+                '沐浴': 'shower',
+                '身體': 'body',
+                
+                // 品牌/產品線
+                '潘婷': 'pantene',
+                '飛柔': 'rejoice',
+                '海倫仙度絲': 'headshoulders',
+                '沙宣': 'vs',
+                '歐蕾': 'olay',
+                '吉列': 'gillette',
+                
+                // 功效
+                '保濕': 'moisturizing',
+                '美白': 'whitening',
+                '抗皺': 'antiaging',
+                '緊緻': 'firming',
+                '修護': 'repair',
+                '滋潤': 'nourishing',
+                '控油': 'oilcontrol',
+                '去屑': 'antidandruff',
+                '柔順': 'smooth',
+                '亮澤': 'shine',
+                
+                // 包裝/規格
+                '組合': 'set',
+                '超值': 'value',
+                '限定': 'limited',
+                '加大': 'large',
+                '旅行': 'travel',
+                '補充': 'refill',
+                '買送': 'bundle',
+                
+                // 數字
+                '一': '1',
+                '二': '2',
+                '三': '3',
+                '四': '4',
+                '五': '5',
+                '六': '6',
+                '七': '7',
+                '八': '8',
+                '九': '9',
+                '十': '10',
+                
+                // 單位
+                '毫升': 'ml',
+                '公克': 'g',
+                '入': 'pcs',
+                '瓶': 'bottle',
+                '罐': 'jar',
+                '盒': 'box'
+            };
+            
+            // 先進行中翻英替換
+            for (const [chinese, english] of Object.entries(chineseToEnglish)) {
+                name = name.replace(new RegExp(chinese, 'g'), english);
+            }
+            
+            // 剩餘的中文字元用拼音或移除
             name = name.replace(/[\u4e00-\u9fa5]/g, '');
             
-            // 移除括號（圓括號、方括號、大括號）
-            name = name.replace(/[()（）\[\]【】{}]/g, '');
+            // 左括弧移除：( （ [ 【 {
+            name = name.replace(/[(（\[【{]/g, '');
+            
+            // 右括弧改為底線：) ） ] 】 }
+            name = name.replace(/[)）\]】}]/g, '_');
             
             // 替換其他不合規符號為底線
             name = name.replace(/[<>:"/\\|?*]/g, '_');
@@ -1804,7 +1889,7 @@
                             <strong>📐 強制延伸：</strong>適合有底色背景的圖檔
                         </div>
                         <div class="edge-tip edge-tip-no-extend">
-                            <strong>🚫 不延伸：</strong>適合被誤抓底色有延展錯誤的圖檔
+                            <strong>🚫 不延伸：</strong>適合背景出現延展有誤的圖檔
                         </div>
                     </div>
                 </div>
@@ -1830,6 +1915,15 @@
                 const elem = document.getElementById(`result-${index}`);
                 if (elem) elem.remove();
                 processedResults[index] = null;
+                
+                // 檢查是否還有剩餘結果
+                const remainingResults = processedResults.filter(r => r !== null);
+                if (remainingResults.length === 0) {
+                    // 沒有剩餘結果，隱藏整個結果區域
+                    downloadArea.style.display = 'none';
+                    // 可選：顯示上傳區域讓用戶重新開始
+                    // uploadArea.style.display = 'block';
+                }
             }
         }
 
@@ -1952,7 +2046,9 @@
         // 更新參數顯示
         function updateParam(param, value) {
             const suffix = (param === 'quality' || param === 'scale') ? '%' : 'px';
-            document.getElementById(param + 'Value').textContent = value + suffix;
+            requestAnimationFrame(() => {
+                document.getElementById(param + 'Value').textContent = value + suffix;
+            });
         }
 
         // 從輸入框更新
@@ -1975,10 +2071,10 @@
         }
 
         // 更新參數並即時預覽
+        let previewUpdateTimer = null;
+        let quickPreviewMode = false;
+        
         async function updateParamAndPreview(param, value) {
-            if (isUpdating) return;
-            isUpdating = true;
-            
             updateParam(param, value);
             
             // 同步輸入框
@@ -1986,31 +2082,59 @@
             document.getElementById(inputId).value = value;
             
             if (!currentEditingOriginalImage) {
-                isUpdating = false;
                 return;
             }
             
-            const scale = parseInt(document.getElementById('scaleRange').value);
-            const padding = parseInt(document.getElementById('paddingRange').value);
-            const quality = parseInt(document.getElementById('qualityRange').value);
-            
-            try {
-                // 即時生成預覽
-                const result = await transformImage(
-                    currentEditingOriginalImage,
-                    currentPreviewResult.filename,
-                    currentPreviewResult.beforeDataUrl,
-                    currentPreviewResult.originalName,
-                    { scale, padding, quality }
-                );
-                
-                editorImage.src = result.afterDataUrl;
-                currentPreviewResult = result;
-            } catch (error) {
-                console.error('預覽更新失敗:', error);
+            // 如果是縮放參數，使用快速 CSS 預覽
+            if (param === 'scale') {
+                quickPreviewMode = true;
+                const scaleValue = parseInt(value) / 100;
+                requestAnimationFrame(() => {
+                    editorImage.style.transform = `scale(${scaleValue})`;
+                    editorImage.style.transition = 'transform 0.1s ease-out';
+                });
             }
             
-            isUpdating = false;
+            // 使用節流 - 300ms 內只執行一次真正的處理
+            if (previewUpdateTimer) {
+                clearTimeout(previewUpdateTimer);
+            }
+            
+            previewUpdateTimer = setTimeout(() => {
+                requestAnimationFrame(async () => {
+                    if (isUpdating) return;
+                    isUpdating = true;
+                    
+                    const scale = parseInt(document.getElementById('scaleRange').value);
+                    const padding = parseInt(document.getElementById('paddingRange').value);
+                    const quality = parseInt(document.getElementById('qualityRange').value);
+                    
+                    try {
+                        // 真正生成預覽
+                        const result = await transformImage(
+                            currentEditingOriginalImage,
+                            currentPreviewResult.filename,
+                            currentPreviewResult.beforeDataUrl,
+                            currentPreviewResult.originalName,
+                            { scale, padding, quality }
+                        );
+                        
+                        // 移除 CSS transform，顯示真實結果
+                        if (quickPreviewMode) {
+                            editorImage.style.transform = '';
+                            editorImage.style.transition = '';
+                            quickPreviewMode = false;
+                        }
+                        
+                        editorImage.src = result.afterDataUrl;
+                        currentPreviewResult = result;
+                    } catch (error) {
+                        console.error('預覽更新失敗:', error);
+                    }
+                    
+                    isUpdating = false;
+                });
+            }, 300);
         }
 
         // 套用並更新主畫面
@@ -2212,7 +2336,7 @@
             
             const confirmed = confirm(
                 '🚫 不延伸邊緣\n\n' +
-                '適合：被誤抓底色有延展錯誤的圖檔（如 Ariel 促銷標籤）\n\n' +
+                '適合：背景出現延展有誤的圖檔（如 Ariel 促銷標籤）\n\n' +
                 '確定要重新處理這張圖片嗎？'
             );
             
@@ -2336,8 +2460,8 @@
             if (savedSuccess) successfulSpecs = JSON.parse(savedSuccess);
             if (savedFailed) failedSpecs = JSON.parse(savedFailed);
             
-            console.log('🎯 MOMO 廣告圖修正器 v5.3 FINAL 已就緒！');
-            console.log('🎨 背景處理模式：結果區緊湊控制');
+            console.log('🎯 MOMO 廣告圖修正器 v5.4 已就緒！');
+            console.log('📝 智能中翻英檔名 + 優化說明文字');
             console.log('📊 已載入歷史記錄');
             console.log('✅ 成功案例:', successfulSpecs.length);
             console.log('❌ 失敗案例:', failedSpecs.length);
