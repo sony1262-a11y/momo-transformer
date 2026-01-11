@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO 廣告圖修正器 v5.4</title>
+    <title>MOMO 廣告圖修正器 v5.5</title>
     <style>
         * {
             margin: 0;
@@ -1004,7 +1004,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="version-badge">v5.4</div>
+            <div class="version-badge">v5.5</div>
             <h1>🎯 MOMO 廣告圖修正器</h1>
             <p>自動調整 × 批次處理 × 手動微調</p>
         </div>
@@ -1104,7 +1104,7 @@
             <div>
                 Made with <a href="https://claude.ai" target="_blank">Claude</a> | 
                 Created by <strong>Alishia</strong> | 
-                Version <strong>v5.4</strong>
+                Version <strong>v5.5</strong>
             </div>
         </div>
     </div>
@@ -1932,19 +1932,62 @@
             const result = processedResults[index];
             if (!result) return;
             
+            // 彈出對話框讓用戶編輯檔名
+            const currentFilename = result.filename;
+            const nameWithoutExt = currentFilename.replace('.jpg', '');
+            
+            const newFilename = prompt(
+                '📝 編輯檔案名稱（不含副檔名）：\n\n' +
+                '提示：下載時瀏覽器會讓你選擇儲存位置',
+                nameWithoutExt
+            );
+            
+            // 如果用戶按取消或輸入空白，使用原檔名
+            const finalFilename = (newFilename && newFilename.trim()) 
+                ? newFilename.trim() + '.jpg' 
+                : currentFilename;
+            
             const link = document.createElement('a');
             link.href = result.afterDataUrl;
-            link.download = result.filename;
+            link.download = finalFilename;
             link.click();
+            
+            // 瀏覽器會自動彈出「另存新檔」對話框
+            // 用戶可以在那裡選擇儲存位置和最終檔名
         }
 
         // 全部下載
         function downloadAll() {
-            processedResults.forEach((result, index) => {
-                if (result) {
-                    setTimeout(() => downloadOne(index), index * 300);
-                }
-            });
+            const validResults = processedResults.filter(r => r !== null);
+            if (validResults.length === 0) return;
+            
+            const editMode = confirm(
+                `📦 即將下載 ${validResults.length} 個檔案\n\n` +
+                '是否要逐一編輯檔名？\n\n' +
+                '「確定」= 逐一編輯檔名\n' +
+                '「取消」= 使用自動檔名直接下載'
+            );
+            
+            if (editMode) {
+                // 逐一下載，每個都可以編輯檔名
+                processedResults.forEach((result, index) => {
+                    if (result) {
+                        setTimeout(() => downloadOne(index), index * 500);
+                    }
+                });
+            } else {
+                // 直接下載，不編輯檔名
+                processedResults.forEach((result, index) => {
+                    if (result) {
+                        setTimeout(() => {
+                            const link = document.createElement('a');
+                            link.href = result.afterDataUrl;
+                            link.download = result.filename;
+                            link.click();
+                        }, index * 300);
+                    }
+                });
+            }
         }
 
         // 切換邊緣延伸狀態（僅切換開關，不立即處理）
@@ -2460,8 +2503,8 @@
             if (savedSuccess) successfulSpecs = JSON.parse(savedSuccess);
             if (savedFailed) failedSpecs = JSON.parse(savedFailed);
             
-            console.log('🎯 MOMO 廣告圖修正器 v5.4 已就緒！');
-            console.log('📝 智能中翻英檔名 + 優化說明文字');
+            console.log('🎯 MOMO 廣告圖修正器 v5.5 已就緒！');
+            console.log('📝 下載前可編輯檔名 + 選擇儲存位置');
             console.log('📊 已載入歷史記錄');
             console.log('✅ 成功案例:', successfulSpecs.length);
             console.log('❌ 失敗案例:', failedSpecs.length);
