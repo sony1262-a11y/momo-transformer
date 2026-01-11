@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO 廣告圖修正器 v5.5.1</title>
+    <title>MOMO 廣告圖修正器 v5.6</title>
     <style>
         * {
             margin: 0;
@@ -1004,7 +1004,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="version-badge">v5.5.1</div>
+            <div class="version-badge">v5.6</div>
             <h1>🎯 MOMO 廣告圖修正器</h1>
             <p>自動調整 × 批次處理 × 手動微調</p>
         </div>
@@ -1080,7 +1080,7 @@
                     <h3>✅ 變身完成！</h3>
                     <p>已自動調整尺寸與背景延伸（預設留白 90px）</p>
                     <p style="font-size: 13px; color: #667eea; margin-top: 8px;">
-                        💡 下載時可選擇儲存位置和修改檔名
+                        💡 下載時可編輯檔名，檔案會存到瀏覽器預設的「下載」資料夾
                     </p>
                 </div>
 
@@ -1107,7 +1107,7 @@
             <div>
                 Made with <a href="https://claude.ai" target="_blank">Claude</a> | 
                 Created by <strong>Alishia</strong> | 
-                Version <strong>v5.5.1</strong>
+                Version <strong>v5.6</strong>
             </div>
         </div>
     </div>
@@ -1935,29 +1935,84 @@
             const result = processedResults[index];
             if (!result) return;
             
-            // 直接下載，瀏覽器會自動彈出「另存新檔」對話框
-            const link = document.createElement('a');
-            link.href = result.afterDataUrl;
-            link.download = result.filename;
-            link.click();
+            // 彈出對話框讓用戶編輯檔名
+            const currentFilename = result.filename.replace('.jpg', '');
             
-            // 瀏覽器的「另存新檔」對話框會讓用戶：
-            // 1. 選擇儲存位置
-            // 2. 編輯檔案名稱
+            const newFilename = prompt(
+                '📝 編輯檔案名稱（不含副檔名）：\n\n' +
+                '提示：下載後檔案會儲存到瀏覽器預設的「下載」資料夾',
+                currentFilename
+            );
+            
+            // 如果用戶按取消，不下載
+            if (newFilename === null) return;
+            
+            // 使用編輯後的檔名（或原檔名）
+            const finalFilename = (newFilename && newFilename.trim()) 
+                ? newFilename.trim() + '.jpg' 
+                : result.filename;
+            
+            // 下載檔案
+            fetch(result.afterDataUrl)
+                .then(res => res.blob())
+                .then(blob => {
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = finalFilename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                });
         }
 
         // 全部下載
         function downloadAll() {
-            processedResults.forEach((result, index) => {
-                if (result) {
-                    setTimeout(() => {
-                        const link = document.createElement('a');
-                        link.href = result.afterDataUrl;
-                        link.download = result.filename;
-                        link.click();
-                    }, index * 500);  // 每 500ms 下載一個
-                }
-            });
+            const validResults = processedResults.filter(r => r !== null);
+            if (validResults.length === 0) return;
+            
+            const editMode = confirm(
+                `📦 即將下載 ${validResults.length} 個檔案到「下載」資料夾\n\n` +
+                '是否要逐一編輯檔名？\n\n' +
+                '「確定」= 逐一編輯每個檔名\n' +
+                '「取消」= 使用自動檔名直接下載'
+            );
+            
+            if (editMode) {
+                // 逐一編輯檔名並下載
+                let downloadIndex = 0;
+                processedResults.forEach((result, index) => {
+                    if (result) {
+                        setTimeout(() => {
+                            downloadOne(index);
+                        }, downloadIndex * 800);
+                        downloadIndex++;
+                    }
+                });
+            } else {
+                // 直接下載，不編輯
+                let downloadIndex = 0;
+                processedResults.forEach((result, index) => {
+                    if (result) {
+                        setTimeout(() => {
+                            fetch(result.afterDataUrl)
+                                .then(res => res.blob())
+                                .then(blob => {
+                                    const blobUrl = URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = blobUrl;
+                                    link.download = result.filename;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                                });
+                        }, downloadIndex * 500);
+                        downloadIndex++;
+                    }
+                });
+            }
         }
 
         // 切換邊緣延伸狀態（僅切換開關，不立即處理）
@@ -2197,10 +2252,36 @@
         function downloadManualResult() {
             if (!currentPreviewResult) return;
             
-            const link = document.createElement('a');
-            link.href = currentPreviewResult.afterDataUrl;
-            link.download = currentPreviewResult.filename;
-            link.click();
+            // 彈出對話框讓用戶編輯檔名
+            const currentFilename = currentPreviewResult.filename.replace('.jpg', '');
+            
+            const newFilename = prompt(
+                '📝 編輯檔案名稱（不含副檔名）：\n\n' +
+                '提示：下載後檔案會儲存到瀏覽器預設的「下載」資料夾',
+                currentFilename
+            );
+            
+            // 如果用戶按取消，不下載
+            if (newFilename === null) return;
+            
+            // 使用編輯後的檔名
+            const finalFilename = (newFilename && newFilename.trim()) 
+                ? newFilename.trim() + '.jpg' 
+                : currentPreviewResult.filename;
+            
+            // 下載檔案
+            fetch(currentPreviewResult.afterDataUrl)
+                .then(res => res.blob())
+                .then(blob => {
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = finalFilename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                });
             
             // 更新主結果列表
             if (currentEditingIndex !== null) {
@@ -2473,11 +2554,9 @@
             if (savedSuccess) successfulSpecs = JSON.parse(savedSuccess);
             if (savedFailed) failedSpecs = JSON.parse(savedFailed);
             
-            console.log('🎯 MOMO 廣告圖修正器 v5.5 已就緒！');
-            console.log('📝 下載時可選擇儲存位置和修改檔名');
-            console.log('💡 提示：如果沒有彈出選擇位置對話框，請檢查瀏覽器設定：');
-            console.log('   Chrome: 設定 → 下載 → 關閉「下載前先詢問每個檔案的儲存位置」');
-            console.log('   如需每次選擇位置，請「開啟」此選項');
+            console.log('🎯 MOMO 廣告圖修正器 v5.6 已就緒！');
+            console.log('📝 下載時可編輯檔名，檔案存到「下載」資料夾');
+            console.log('💡 提示：瀏覽器安全限制，無法自訂儲存位置');
             console.log('📊 已載入歷史記錄');
             console.log('✅ 成功案例:', successfulSpecs.length);
             console.log('❌ 失敗案例:', failedSpecs.length);
