@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO 廣告圖修正器 v5.6</title>
+    <title>MOMO 廣告圖修正器 v5.8</title>
     <style>
         * {
             margin: 0;
@@ -663,19 +663,59 @@
             margin-top: 10px;
         }
 
+        /* 回報成果區塊 */
+        .report-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #dee2e6;
+            position: relative;
+        }
+
+        .report-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #999;
+            text-align: center;
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0 10px;
+        }
+
+        .report-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+
         .btn-report {
             padding: 6px 10px;
             font-size: 11px;
             border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-report:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .btn-report-success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
         }
 
         .btn-report-fail {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
         }
+
 
         /* 手動微調面板 */
         .manual-editor-overlay {
@@ -875,10 +915,15 @@
         }
 
         .editor-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            display: flex;
+            justify-content: center;
             gap: 10px;
             margin-top: 20px;
+        }
+
+        .editor-actions .btn {
+            flex: 0 0 auto;
+            min-width: 120px;
         }
 
         .editor-tip {
@@ -1004,7 +1049,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="version-badge">v5.6</div>
+            <div class="version-badge">v5.8</div>
             <h1>🎯 MOMO 廣告圖修正器</h1>
             <p>自動調整 × 批次處理 × 手動微調</p>
         </div>
@@ -1107,7 +1152,7 @@
             <div>
                 Made with <a href="https://claude.ai" target="_blank">Claude</a> | 
                 Created by <strong>Alishia</strong> | 
-                Version <strong>v5.6</strong>
+                Version <strong>v5.8</strong>
             </div>
         </div>
     </div>
@@ -1181,9 +1226,6 @@
                 <button class="btn btn-success btn-sm" onclick="applyAndUpdate()">
                     ✨ 套用變更
                 </button>
-                <button class="btn btn-warning btn-sm" onclick="downloadManualResult()">
-                    💾 下載此版本
-                </button>
                 <button class="btn btn-danger btn-sm" onclick="resetParams()">
                     🔄 重置為預設
                 </button>
@@ -1191,7 +1233,7 @@
 
             <div class="editor-tip">
                 <strong>💡 使用提示</strong><br>
-                拖曳滑桿或直接輸入數值調整參數，即時預覽效果。點擊「套用變更」更新主畫面，或直接「下載此版本」。
+                拖曳滑桿或直接輸入數值調整參數，即時預覽效果。調整完成後點擊「套用變更」更新主畫面，然後回到主畫面下載。
             </div>
         </div>
     </div>
@@ -1899,12 +1941,19 @@
                 <div class="result-actions">
                     <button class="btn btn-success btn-sm" onclick="downloadOne(${index})">💾 下載</button>
                     <button class="btn btn-warning btn-sm" onclick="openEditorFor(${index})">🔧 微調</button>
-                    <button class="btn btn-report btn-report-success" onclick="reportSuccess(${index})">
-                        ✅ 成功
-                    </button>
-                    <button class="btn btn-report btn-report-fail" onclick="reportFail(${index})">
-                        ❌ 失敗
-                    </button>
+                </div>
+                
+                <!-- 回報成果區塊 -->
+                <div class="report-section">
+                    <div class="report-label">回報成果</div>
+                    <div class="report-buttons">
+                        <button class="btn btn-report btn-report-success" onclick="reportSuccess(${index})">
+                            ✅ 成功
+                        </button>
+                        <button class="btn btn-report btn-report-fail" onclick="reportFail(${index})">
+                            ❌ 失敗
+                        </button>
+                    </div>
                 </div>
             `;
             
@@ -2075,8 +2124,18 @@
             const result = processedResults[index];
             if (!result) return;
             
-            currentEditingImage = result.beforeDataUrl;
-            currentEditingOriginalImage = result.originalImage;
+            // 重要修正：使用變身後的圖（afterDataUrl）作為基準
+            // 而非原始圖（originalImage）
+            // 這樣才能保留背景處理模式的效果
+            currentEditingImage = result.afterDataUrl;
+            
+            // 將變身後的圖轉為 Image 物件供微調使用
+            const afterImage = new Image();
+            afterImage.onload = () => {
+                currentEditingOriginalImage = afterImage;
+            };
+            afterImage.src = result.afterDataUrl;
+            
             currentEditingIndex = index;
             
             editorImage.src = result.afterDataUrl;
@@ -2099,7 +2158,16 @@
             updateParam('quality', quality);
             
             // 保存當前結果作為預覽基準
-            currentPreviewResult = result;
+            // 重要：保留原本的延伸模式設定
+            currentPreviewResult = {
+                ...result,
+                params: {
+                    scale: scale,
+                    padding: padding,
+                    quality: quality,
+                    forceEdgeExtension: result.params.forceEdgeExtension  // 保留延伸設定
+                }
+            };
         }
 
         // 關閉編輯器
@@ -2178,13 +2246,20 @@
                     const quality = parseInt(document.getElementById('qualityRange').value);
                     
                     try {
-                        // 真正生成預覽
+                        // 真正生成預覽 - 保留原本的延伸模式設定
+                        const params = { 
+                            scale, 
+                            padding, 
+                            quality,
+                            forceEdgeExtension: currentPreviewResult.params.forceEdgeExtension  // 保留延伸設定
+                        };
+                        
                         const result = await transformImage(
                             currentEditingOriginalImage,
                             currentPreviewResult.filename,
                             currentPreviewResult.beforeDataUrl,
                             currentPreviewResult.originalName,
-                            { scale, padding, quality }
+                            params
                         );
                         
                         // 移除 CSS transform，顯示真實結果
@@ -2249,70 +2324,6 @@
         }
 
         // 下載手動調整結果
-        function downloadManualResult() {
-            if (!currentPreviewResult) return;
-            
-            // 彈出對話框讓用戶編輯檔名
-            const currentFilename = currentPreviewResult.filename.replace('.jpg', '');
-            
-            const newFilename = prompt(
-                '📝 編輯檔案名稱（不含副檔名）：\n\n' +
-                '提示：下載後檔案會儲存到瀏覽器預設的「下載」資料夾',
-                currentFilename
-            );
-            
-            // 如果用戶按取消，不下載
-            if (newFilename === null) return;
-            
-            // 使用編輯後的檔名
-            const finalFilename = (newFilename && newFilename.trim()) 
-                ? newFilename.trim() + '.jpg' 
-                : currentPreviewResult.filename;
-            
-            // 下載檔案
-            fetch(currentPreviewResult.afterDataUrl)
-                .then(res => res.blob())
-                .then(blob => {
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
-                    link.download = finalFilename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                });
-            
-            // 更新主結果列表
-            if (currentEditingIndex !== null) {
-                processedResults[currentEditingIndex] = currentPreviewResult;
-                const resultElem = document.getElementById(`result-${currentEditingIndex}`);
-                if (resultElem) {
-                    resultElem.querySelector('.comparison-label.after + .comparison-image-wrapper img').src = currentPreviewResult.afterDataUrl;
-                    resultElem.querySelector('.summary-grid').innerHTML = `
-                        <div class="summary-item">
-                            <div class="summary-label">縮放</div>
-                            <div class="summary-value">${currentPreviewResult.scale}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">留白</div>
-                            <div class="summary-value">${currentPreviewResult.padding}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">大小</div>
-                            <div class="summary-value">${currentPreviewResult.afterSize}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">格式</div>
-                            <div class="summary-value">JPG</div>
-                        </div>
-                    `;
-                }
-            }
-            
-            closeEditor();
-        }
-
         // 回報成功
         function reportSuccess(index) {
             const result = processedResults[index];
@@ -2554,8 +2565,8 @@
             if (savedSuccess) successfulSpecs = JSON.parse(savedSuccess);
             if (savedFailed) failedSpecs = JSON.parse(savedFailed);
             
-            console.log('🎯 MOMO 廣告圖修正器 v5.6 已就緒！');
-            console.log('📝 下載時可編輯檔名，檔案存到「下載」資料夾');
+            console.log('🎯 MOMO 廣告圖修正器 v5.8 已就緒！');
+            console.log('🎨 UI 優化：分隔線式回報區塊 + 按鈕置中對齊');
             console.log('💡 提示：瀏覽器安全限制，無法自訂儲存位置');
             console.log('📊 已載入歷史記錄');
             console.log('✅ 成功案例:', successfulSpecs.length);
