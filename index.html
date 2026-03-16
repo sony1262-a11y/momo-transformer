@@ -449,6 +449,30 @@
             font-weight: 500;
         }
 
+        .task-info-only {
+            cursor: default;
+            background: #FFF8E8;
+            border-color: #F5C842;
+        }
+
+        .task-info-only:hover {
+            border-color: #F5C842;
+            background: #FFF8E8;
+            transform: none;
+        }
+
+        .task-badge {
+            display: inline-block;
+            background: var(--black);
+            color: var(--yellow);
+            font-size: 9px;
+            font-weight: 900;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
         /* ===== BUTTONS ===== */
         .start-section { text-align: center; margin-top: 24px; }
 
@@ -1246,8 +1270,8 @@
                 <rect x="14" y="24" width="52" height="42" rx="6" stroke="#1A1A1A" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
             </svg>
             <div class="upload-title">拖曳圖片或點擊選擇</div>
-            <div class="upload-hint">支援 JPG, PNG, GIF ｜ 可批次上傳多張</div>
-            <input type="file" id="fileInput" accept="image/*" multiple>
+            <div class="upload-hint">支援 JPG、PNG、GIF、WebP、BMP 等格式 ｜ 可批次上傳多張</div>
+            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/*" multiple>
         </div>
 
         <!-- Upload Preview -->
@@ -1336,6 +1360,18 @@
                             </svg>
                             <div><div class="task-name">檔案壓縮</div><div class="task-desc">&lt; 500KB</div></div>
                         </label>
+                        <div class="task-option task-info-only">
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <rect x="3" y="2" width="11" height="15" rx="2" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M10 2L16 8H10V2Z" fill="#1A1A1A"/>
+                                <rect x="2" y="14" width="18" height="7" rx="2" fill="#1A1A1A"/>
+                                <text x="11" y="20" text-anchor="middle" fill="white" font-size="5.5" font-weight="900" font-family="sans-serif">JPG</text>
+                            </svg>
+                            <div>
+                                <div class="task-name">格式轉換 <span class="task-badge">自動</span></div>
+                                <div class="task-desc">PNG / JPG / GIF / WebP → JPG</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1370,6 +1406,18 @@
                             </svg>
                             <div><div class="task-name">檔案壓縮</div><div class="task-desc">&lt; 500KB</div></div>
                         </label>
+                        <div class="task-option task-info-only">
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <rect x="3" y="2" width="11" height="15" rx="2" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M10 2L16 8H10V2Z" fill="#1A1A1A"/>
+                                <rect x="2" y="14" width="18" height="7" rx="2" fill="#1A1A1A"/>
+                                <text x="11" y="20" text-anchor="middle" fill="white" font-size="5.5" font-weight="900" font-family="sans-serif">JPG</text>
+                            </svg>
+                            <div>
+                                <div class="task-name">格式轉換 <span class="task-badge">自動</span></div>
+                                <div class="task-desc">PNG / JPG / GIF / WebP → JPG</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
