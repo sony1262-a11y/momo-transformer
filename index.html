@@ -3,289 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO 廣告圖修正器 v6.2</title>
+    <title>MOMO 廣告圖修正器 v6.3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Dela+Gothic+One&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 16px;
-            opacity: 0.9;
+        :root {
+            --cream: #F5F0E8;
+            --yellow: #F5C842;
+            --black: #1A1A1A;
+            --red: #D94F3D;
+            --white: #FDFAF4;
+            --gray: #8A8A8A;
+            --light-gray: #E8E3D8;
+            --green: #4A8C5C;
+            --blue: #3D6FA8;
         }
 
-        .version-badge {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--cream);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: #FFF8F0;
+            padding: 32px 48px;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 2px solid var(--black);
+        }
+
+        .header::before {
+            content: '';
             position: absolute;
-            top: 15px;
-            right: 20px;
-            background: rgba(255,255,255,0.3);
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 13px;
-            backdrop-filter: blur(10px);
+            top: -60px; right: -60px;
+            width: 220px; height: 220px;
+            background: var(--yellow);
+            border-radius: 50%;
+            opacity: 0.3;
         }
-        
-        .features {
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; left: 30%;
+            width: 140px; height: 140px;
+            background: var(--red);
+            border-radius: 50%;
+            opacity: 0.07;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 35px;
-            padding: 25px 30px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 32px;
+            position: relative;
+            z-index: 1;
         }
-        
-        .feature {
+
+        .header-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .header-label {
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: #BA7517;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .header-title {
+            font-family: 'Dela Gothic One', 'Noto Sans TC', sans-serif;
+            font-size: clamp(28px, 4vw, 52px);
+            color: var(--black);
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .header-title span {
+            color: var(--red);
+        }
+
+        .header-version {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--yellow);
+            color: var(--black);
+            border: 2px solid var(--black);
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-weight: 900;
+            font-size: 13px;
+            align-self: flex-start;
+            margin-top: 8px;
+            box-shadow: 2px 2px 0 var(--black);
+        }
+
+        /* ===== FEATURES STRIP ===== */
+        .features-strip {
+            background: var(--yellow);
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+            border-bottom: 2px solid var(--black);
+        }
+
+        .features-inner {
+            display: flex;
+            align-items: stretch;
+            max-width: 100%;
+        }
+
+        .feature-pill {
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            padding: 20px 12px;
+            border-right: 2px solid rgba(0,0,0,0.12);
+            flex: 1;
+            min-width: 80px;
             text-align: center;
         }
-        
-        .feature-icon {
-            font-size: 32px;
-        }
-        
-        .feature-text {
-            font-size: 13px;
-            color: #333;
-            font-weight: 600;
+
+        .feature-pill:last-child { border-right: none; }
+
+        .feature-icon-wrap {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
         }
 
-        .feature-subtext {
-            font-size: 11px;
-            color: #666;
+        .feature-icon-wrap svg {
+            width: 100%;
+            height: 100%;
         }
-        
-        .main-content {
-            padding: 40px 30px;
+
+        .feature-text-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
         }
-        
+
+        .feature-name {
+            font-weight: 900;
+            font-size: 12px;
+            color: var(--black);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .feature-sub {
+            font-size: 10px;
+            color: rgba(0,0,0,0.55);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ===== MAIN ===== */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+
+        /* ===== UPLOAD AREA ===== */
         .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 60px 20px;
+            border: 3px dashed var(--black);
+            border-radius: 16px;
+            padding: 72px 32px;
             text-align: center;
-            background: #f8f9ff;
+            background: var(--white);
             cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 30px;
-        }
-        
-        .upload-area:hover {
-            border-color: #f5576c;
-            background: #fff5f7;
-        }
-        
-        .upload-area.dragover {
-            border-color: #f5576c;
-            background: #fff5f7;
-            transform: scale(1.02);
-        }
-        
-        .upload-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        
-        .upload-text {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .upload-hint {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        #fileInput {
-            display: none;
+            transition: all 0.25s;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .upload-preview-section {
-            display: none;
-            margin-bottom: 30px;
+        .upload-area::after {
+            content: '';
+            position: absolute;
+            bottom: -20px; right: -20px;
+            width: 120px; height: 120px;
+            background: var(--yellow);
+            border-radius: 50%;
+            opacity: 0.25;
+            transition: all 0.3s;
         }
+
+        .upload-area:hover {
+            border-color: var(--red);
+            background: #FFF8F7;
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0 var(--black);
+        }
+
+        .upload-area:hover::after {
+            opacity: 0.5;
+            transform: scale(1.2);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--red);
+            background: #FFF3F0;
+            transform: scale(1.01);
+        }
+
+        .upload-icon-svg {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+        }
+
+        .upload-title {
+            font-family: 'Dela Gothic One', 'Noto Sans TC', sans-serif;
+            font-size: 22px;
+            color: var(--black);
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        #fileInput { display: none; }
+
+        /* ===== UPLOAD PREVIEW ===== */
+        .upload-preview-section { display: none; margin-bottom: 32px; }
 
         .upload-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
         }
 
         .upload-preview {
             position: relative;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
             overflow: hidden;
-            background: white;
-            transition: all 0.3s;
+            background: var(--white);
+            transition: all 0.2s;
         }
 
         .upload-preview:hover {
-            border-color: #667eea;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--black);
+            box-shadow: 4px 4px 0 var(--black);
+            transform: translate(-2px, -2px);
         }
 
         .upload-preview img {
             width: 100%;
-            height: 180px;
+            height: 160px;
             object-fit: contain;
-            background: #f8f9fa;
+            background: var(--cream);
         }
 
         .upload-preview-name {
-            padding: 8px;
-            font-size: 11px;
-            color: #666;
+            padding: 8px 10px;
+            font-size: 10px;
+            color: var(--gray);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-align: center;
+            font-weight: 600;
         }
 
         .upload-preview-badge {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #ffc107;
-            color: white;
+            top: 8px; left: 8px;
+            background: var(--yellow);
+            color: var(--black);
             padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 900;
+            border: 1.5px solid var(--black);
         }
 
         .remove-upload-btn {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #dc3545;
+            top: 6px; right: 6px;
+            background: var(--red);
             color: white;
-            border: none;
-            width: 24px;
-            height: 24px;
+            border: 1.5px solid var(--black);
+            width: 22px; height: 22px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 14px;
-            line-height: 1;
+            font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 900;
         }
 
-        /* 處理選項 */
+        /* ===== PROCESSING OPTIONS ===== */
         .processing-options {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
+            background: var(--white);
+            border: 2px solid var(--black);
+            border-radius: 16px;
+            padding: 28px;
             margin: 20px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 4px 4px 0 var(--black);
         }
 
-        .options-header h4 {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 16px;
+        .options-title {
+            font-family: 'Dela Gothic One', 'Noto Sans TC', sans-serif;
+            font-size: 18px;
+            color: var(--black);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
+        .options-title-icon {
+            width: 28px; height: 28px;
+        }
+
+        /* Image type selector */
         .image-type-selector {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
-        .type-option {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .type-option input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-        }
+        .type-option { position: relative; cursor: pointer; }
+        .type-option input[type="radio"] { position: absolute; opacity: 0; }
 
         .type-label {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
-            transition: all 0.3s;
-            background: #f8f9fa;
+            padding: 18px;
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            background: var(--cream);
+            transition: all 0.2s;
+            gap: 8px;
         }
 
         .type-option input[type="radio"]:checked + .type-label {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            border-color: var(--black);
+            background: var(--yellow);
+            box-shadow: 3px 3px 0 var(--black);
+            transform: translate(-1px, -1px);
         }
 
-        .type-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
+        .type-icon { font-size: 0; }
+        .type-icon svg { width: 36px; height: 36px; }
 
         .type-name {
-            font-weight: 600;
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 4px;
+            font-weight: 900;
+            font-size: 13px;
+            color: var(--black);
         }
 
         .type-size {
-            font-size: 12px;
-            color: #6c757d;
+            font-size: 11px;
+            color: var(--gray);
+            font-weight: 700;
         }
 
-        .task-selector {
-            border-top: 1px solid #dee2e6;
-            padding-top: 15px;
-        }
+        /* Task grid */
+        .task-selector { border-top: 2px dashed var(--light-gray); padding-top: 20px; }
 
         .task-header {
-            font-size: 13px;
-            font-weight: 600;
-            color: #495057;
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--gray);
             margin-bottom: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .task-grid {
@@ -297,258 +404,266 @@
         .task-option {
             display: flex;
             align-items: flex-start;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px 14px;
+            border-radius: 10px;
             cursor: pointer;
+            background: var(--cream);
+            border: 2px solid var(--light-gray);
             transition: all 0.2s;
-            background: #f8f9fa;
-            border: 2px solid transparent;
+            gap: 10px;
         }
 
         .task-option:hover {
-            background: #e9ecef;
-            border-color: #667eea;
-        }
-
-        .task-option input[type="checkbox"]:checked + .task-label {
-            color: #667eea;
+            border-color: var(--black);
+            background: var(--white);
         }
 
         .task-option input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-right: 10px;
+            width: 16px; height: 16px;
             margin-top: 2px;
             cursor: pointer;
             flex-shrink: 0;
+            accent-color: var(--black);
         }
 
-        .task-label {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .task-icon {
-            font-size: 18px;
+        .task-icon-svg {
+            width: 22px; height: 22px;
             flex-shrink: 0;
         }
 
-        .task-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
         .task-name {
-            font-weight: 600;
+            font-weight: 900;
             font-size: 12px;
-            color: #333;
+            color: var(--black);
         }
 
         .task-desc {
-            font-size: 11px;
-            color: #6c757d;
+            font-size: 10px;
+            color: var(--gray);
+            font-weight: 500;
         }
 
-        /* 保留舊的 task-info CSS 以防需要 */
-        .task-info {
-            background: #f8f9ff;
-            border-left: 3px solid #667eea;
-            padding: 12px 15px;
-            border-radius: 6px;
-        }
+        /* ===== BUTTONS ===== */
+        .start-section { text-align: center; margin-top: 24px; }
 
-        .info-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 8px;
-        }
-
-        .info-list {
-            font-size: 12px;
-            line-height: 1.8;
-            color: #495057;
-        }
-            font-size: 12px;
-            color: #6c757d;
-        }
-
-        .start-section {
-            text-align: center;
-        }
-        
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--black);
+            color: var(--white);
+            border: 2px solid var(--black);
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 900;
+            font-family: 'Noto Sans TC', sans-serif;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            margin: 5px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            transition: all 0.15s;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.25);
+            margin: 4px;
+            text-decoration: none;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .btn-yellow {
+            background: var(--yellow);
+            color: var(--black);
+            box-shadow: 4px 4px 0 var(--black);
+        }
+
+        .btn-yellow:hover { box-shadow: 6px 6px 0 var(--black); }
+
+        .btn-red {
+            background: var(--red);
+            color: var(--white);
+            box-shadow: 4px 4px 0 var(--black);
+        }
+
+        .btn-red:hover { box-shadow: 6px 6px 0 var(--black); }
+
+        .btn-green {
+            background: var(--green);
+            color: var(--white);
+            box-shadow: 4px 4px 0 var(--black);
         }
 
         .btn-sm {
             padding: 8px 16px;
-            font-size: 13px;
-            white-space: nowrap;
+            font-size: 12px;
         }
 
-        .btn-danger {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffd89b 0%, #ff9800 100%);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-        
+        /* ===== PROGRESS ===== */
         .progress-area {
             display: none;
             margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
+            background: var(--white);
+            border: 2px solid var(--black);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 4px 4px 0 var(--black);
         }
-        
+
+        .progress-text {
+            font-weight: 900;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
         .progress-bar {
             width: 100%;
-            height: 30px;
-            background: #e9ecef;
-            border-radius: 15px;
+            height: 24px;
+            background: var(--light-gray);
+            border-radius: 99px;
             overflow: hidden;
-            margin-top: 10px;
+            border: 2px solid var(--black);
         }
-        
+
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: var(--yellow);
             transition: width 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
+            font-weight: 900;
+            font-size: 12px;
+            color: var(--black);
         }
-        
-        .download-area {
-            display: none;
-            margin-top: 30px;
-        }
-        
+
+        /* ===== DOWNLOAD AREA ===== */
+        .download-area { display: none; margin-top: 32px; }
+
         .download-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 28px;
         }
-        
-        .download-header h3 {
-            color: #28a745;
-            margin-bottom: 10px;
+
+        .download-title {
+            font-family: 'Dela Gothic One', 'Noto Sans TC', sans-serif;
+            font-size: 32px;
+            color: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .download-subtitle {
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 600;
         }
 
         .batch-actions {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 32px;
             flex-wrap: wrap;
         }
-        
+
+        /* ===== RESULT GRID ===== */
         .result-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             margin: 20px 0;
         }
-        
+
         .result-item {
-            border: 2px solid #28a745;
-            border-radius: 15px;
-            padding: 15px;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid var(--black);
+            border-radius: 16px;
+            padding: 18px;
+            background: var(--white);
+            box-shadow: 5px 5px 0 var(--black);
             position: relative;
+            transition: transform 0.2s;
+        }
+
+        .result-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--black);
         }
 
         .remove-result-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #dc3545;
+            top: 10px; right: 10px;
+            background: var(--red);
             color: white;
-            border: none;
-            width: 28px;
-            height: 28px;
+            border: 2px solid var(--black);
+            width: 28px; height: 28px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
+            font-size: 14px;
+            font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
-        .remove-result-btn:hover {
-            background: #c82333;
-            transform: scale(1.1);
+        .remove-result-btn:hover { transform: scale(1.15); }
+
+        .result-item-name {
+            font-size: 10px;
+            color: var(--gray);
+            margin-bottom: 12px;
+            font-weight: 700;
+            text-align: center;
+            word-break: break-all;
+            padding-right: 30px;
         }
 
         .result-comparison {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 14px;
         }
 
-        .comparison-side {
-            text-align: center;
-        }
+        .comparison-side { text-align: center; }
 
         .comparison-label {
-            font-weight: 600;
-            font-size: 11px;
-            color: white;
-            margin-bottom: 8px;
-            padding: 4px 8px;
-            border-radius: 15px;
+            font-weight: 900;
+            font-size: 10px;
+            margin-bottom: 6px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            border: 1.5px solid var(--black);
             display: inline-block;
         }
 
         .comparison-label.before {
-            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            background: var(--light-gray);
+            color: var(--black);
         }
 
         .comparison-label.after {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            background: var(--yellow);
+            color: var(--black);
         }
 
         .comparison-image-wrapper {
             width: 100%;
-            height: 140px;
-            background: #f8f9fa;
+            height: 130px;
+            background: var(--cream);
+            border: 2px solid var(--light-gray);
             border-radius: 8px;
-            border: 2px solid #e9ecef;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -564,145 +679,48 @@
 
         .comparison-size-label {
             position: absolute;
-            bottom: 6px;
-            right: 6px;
+            bottom: 4px; right: 4px;
             background: rgba(0,0,0,0.7);
             color: white;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 600;
-        }
-        
-        .result-item-name {
-            font-size: 11px;
-            color: #333;
-            margin-bottom: 10px;
-            font-weight: 600;
-            text-align: center;
-            word-break: break-all;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
         }
 
+        /* Summary */
         .result-summary {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            background: var(--cream);
+            border: 1.5px solid var(--light-gray);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 12px;
         }
 
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
         .summary-item {
             text-align: center;
-            padding: 6px;
-            background: white;
+            background: var(--white);
             border-radius: 6px;
+            padding: 6px 4px;
+            border: 1px solid var(--light-gray);
         }
 
-        .summary-label {
-            font-size: 10px;
-            color: #6c757d;
-            margin-bottom: 3px;
-        }
+        .summary-label { font-size: 9px; color: var(--gray); font-weight: 700; margin-bottom: 2px; }
+        .summary-value { font-size: 11px; font-weight: 900; color: var(--black); }
 
-        .summary-value {
-            font-size: 12px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .edge-control {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-            border: 2px solid #e9ecef;
-        }
-
-        .edge-control-label {
-            font-size: 11px;
-            color: #495057;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .edge-toggle {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .edge-toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .edge-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 24px;
-        }
-
-        .edge-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        .edge-toggle input:checked + .edge-slider {
-            background-color: #667eea;
-        }
-
-        .edge-toggle input:checked + .edge-slider:before {
-            transform: translateX(20px);
-        }
-
-        .edge-apply-btn {
-            padding: 4px 12px;
-            font-size: 11px;
-            border-radius: 15px;
-            border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .edge-apply-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-        }
-
-        /* 底圖處理模式控制區 */
+        /* Edge extension control */
         .edge-extension-control {
-            margin: 12px 0 8px 0;
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
+            background: var(--cream);
+            border: 1.5px solid var(--light-gray);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin: 10px 0;
         }
 
         .edge-control-header {
@@ -713,18 +731,18 @@
         }
 
         .edge-control-title {
-            font-size: 11px;
-            font-weight: 600;
-            color: #495057;
+            font-size: 10px;
+            font-weight: 900;
+            color: var(--black);
         }
 
         .edge-control-current {
-            font-size: 10px;
+            font-size: 9px;
             padding: 2px 8px;
-            border-radius: 10px;
-            background: #667eea;
-            color: white;
-            font-weight: 600;
+            border-radius: 6px;
+            background: var(--black);
+            color: var(--white);
+            font-weight: 900;
         }
 
         .edge-control-buttons {
@@ -735,93 +753,42 @@
         }
 
         .edge-btn {
-            background: white;
-            border: 1.5px solid #dee2e6;
+            background: var(--white);
+            border: 1.5px solid var(--light-gray);
             border-radius: 6px;
             padding: 6px 8px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
+            font-family: 'Noto Sans TC', sans-serif;
         }
 
-        .edge-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+        .edge-btn-extend { border-color: var(--blue); }
+        .edge-btn-extend:hover { background: var(--blue); color: white; }
 
-        .edge-btn-extend {
-            border-color: #667eea;
-        }
+        .edge-btn-no-extend { border-color: var(--red); }
+        .edge-btn-no-extend:hover { background: var(--red); color: white; }
 
-        .edge-btn-extend:hover {
-            background: #667eea;
-            color: white;
-        }
+        .edge-btn-text { font-size: 10px; font-weight: 900; }
 
-        .edge-btn-no-extend {
-            border-color: #ff6b6b;
-        }
-
-        .edge-btn-no-extend:hover {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .edge-btn-icon {
-            font-size: 14px;
-        }
-
-        .edge-btn-text {
-            font-size: 10px;
-            font-weight: 600;
-        }
-
-        .edge-control-tips {
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px dashed #dee2e6;
-            font-size: 9px;
-            line-height: 1.4;
-            color: #6c757d;
-        }
+        .edge-control-tips { margin-top: 6px; }
 
         .edge-tip {
-            padding: 4px 6px;
-            margin-bottom: 3px;
-            border-radius: 4px;
-        }
-
-        .edge-tip:last-child {
-            margin-bottom: 0;
-        }
-
-        .edge-tip strong {
             font-size: 9px;
-            margin-right: 4px;
+            line-height: 1.5;
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-bottom: 3px;
         }
 
-        .edge-tip-extend {
-            background: #e7f3ff;
-            border-left: 2px solid #2196F3;
-            color: #1976d2;
-        }
+        .edge-tip-extend { background: #E8F0FF; color: #2B5BA8; border-left: 2px solid var(--blue); }
+        .edge-tip-no-extend { background: #FFE8E6; color: #B83A2C; border-left: 2px solid var(--red); }
 
-        .edge-tip-no-extend {
-            background: #ffe7e7;
-            border-left: 2px solid #ff6b6b;
-            color: #c62828;
-        }
-
-        .edge-tip-no-extend {
-            background: #ffe7e7;
-            border-left: 2px solid #ff6b6b;
-            color: #c62828;
-        }
-
+        /* Result actions */
         .result-actions {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -829,703 +796,709 @@
             margin-top: 10px;
         }
 
-        /* 回報成果區塊 */
+        /* Report section */
         .report-section {
             margin-top: 12px;
             padding-top: 12px;
-            border-top: 1px solid #dee2e6;
+            border-top: 2px dashed var(--light-gray);
             position: relative;
         }
 
         .report-label {
-            font-size: 10px;
-            font-weight: 600;
-            color: #999;
+            font-size: 9px;
+            font-weight: 900;
+            color: var(--gray);
             text-align: center;
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            padding: 0 10px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .report-buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px;
-            margin-top: 8px;
         }
 
         .btn-report {
-            padding: 6px 10px;
+            padding: 7px 10px;
             font-size: 11px;
-            border-radius: 20px;
-            border: none;
+            border-radius: 8px;
+            border: 2px solid var(--black);
             cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
+            font-weight: 900;
+            font-family: 'Noto Sans TC', sans-serif;
+            transition: all 0.15s;
+            box-shadow: 2px 2px 0 var(--black);
         }
 
         .btn-report:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--black);
         }
 
-        .btn-report-success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-        }
+        .btn-report-success { background: #DDFFF0; color: #1A6B40; }
+        .btn-report-fail { background: #FFE0DC; color: #8B2015; }
 
-        .btn-report-fail {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            color: white;
-        }
-
-
-        /* 手動微調面板 */
+        /* ===== MANUAL EDITOR ===== */
         .manual-editor-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.3);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
             z-index: 1000;
         }
 
-        .manual-editor-overlay.active {
-            display: block;
-        }
+        .manual-editor-overlay.active { display: block; }
 
         .manual-editor {
             position: fixed;
-            right: -450px;
+            right: -480px;
             top: 0;
             height: 100vh;
-            width: 450px;
-            background: white;
-            padding: 25px;
+            width: 440px;
+            background: var(--cream);
+            padding: 28px;
             overflow-y: auto;
-            box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+            border-left: 3px solid var(--black);
             transition: right 0.3s ease;
             z-index: 1001;
         }
 
-        .manual-editor-overlay.active .manual-editor {
-            right: 0;
-        }
+        .manual-editor-overlay.active .manual-editor { right: 0; }
 
         .editor-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--black);
         }
 
         .editor-title {
-            font-size: 1.4em;
-            font-weight: 600;
-            color: #667eea;
+            font-family: 'Dela Gothic One', 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            color: var(--black);
         }
 
         .editor-close {
-            background: #dc3545;
+            background: var(--red);
             color: white;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+            border: 2px solid var(--black);
+            width: 34px; height: 34px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 20px;
-            line-height: 1;
-            transition: all 0.3s;
+            font-size: 18px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
 
-        .editor-close:hover {
-            background: #c82333;
-            transform: rotate(90deg);
-        }
+        .editor-close:hover { transform: rotate(90deg); }
 
         .editor-preview {
             width: 100%;
-            height: 300px;
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
-            margin-bottom: 15px;
+            height: 280px;
+            background: var(--white);
+            border: 2px solid var(--black);
+            border-radius: 12px;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            box-shadow: 4px 4px 0 var(--black);
         }
 
         .editor-preview img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            transform-origin: center center;
-            will-change: transform;
         }
 
-        .editor-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .editor-controls { display: flex; flex-direction: column; gap: 14px; }
 
         .control-group {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
+            background: var(--white);
+            border: 2px solid var(--light-gray);
+            padding: 14px;
+            border-radius: 10px;
         }
 
         .control-label {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: #495057;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--black);
         }
 
         .control-value {
-            background: #667eea;
-            color: white;
+            background: var(--black);
+            color: var(--white);
             padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.9em;
-            min-width: 60px;
+            border-radius: 6px;
+            font-size: 12px;
+            min-width: 55px;
             text-align: center;
+            font-weight: 900;
         }
 
-        .control-value-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .control-value-wrapper { display: flex; align-items: center; gap: 8px; }
 
         .control-input {
-            width: 80px;
+            width: 72px;
             padding: 4px 8px;
-            border: 1px solid #dee2e6;
+            border: 2px solid var(--light-gray);
             border-radius: 6px;
-            font-size: 0.85em;
+            font-size: 12px;
             text-align: center;
+            font-weight: 700;
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--cream);
         }
 
         input[type="range"] {
             width: 100%;
-            height: 10px;
-            border-radius: 5px;
-            background: linear-gradient(to right, #e3e8f0 0%, #c5d3e8 100%);
+            height: 8px;
+            border-radius: 4px;
+            background: var(--light-gray);
             outline: none;
             -webkit-appearance: none;
             cursor: pointer;
-            transition: background 0.1s ease;
-            will-change: background;
+            border: 1.5px solid var(--black);
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 22px; height: 22px;
             border-radius: 50%;
-            background: linear-gradient(145deg, #667eea, #5568d3);
+            background: var(--yellow);
             cursor: grab;
-            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-            border: 2px solid white;
-            will-change: transform, box-shadow;
+            border: 2px solid var(--black);
+            box-shadow: 2px 2px 0 var(--black);
+            transition: transform 0.1s;
         }
 
         input[type="range"]::-webkit-slider-thumb:active {
             cursor: grabbing;
-            transform: scale(1.15);
-            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.6);
+            transform: scale(1.2);
         }
 
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: linear-gradient(145deg, #5568d3, #4557c2);
-            transform: scale(1.08);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #667eea, #5568d3);
-            cursor: grab;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform, box-shadow;
-        }
-
-        input[type="range"]::-moz-range-thumb:active {
-            cursor: grabbing;
-            transform: scale(1.15);
-        }
-
-        .control-desc {
-            font-size: 0.75em;
-            color: #6c757d;
-            margin-top: 5px;
-        }
+        .control-desc { font-size: 10px; color: var(--gray); margin-top: 6px; font-weight: 600; }
 
         .editor-actions {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-top: 20px;
         }
 
-        .editor-actions .btn {
-            flex: 0 0 auto;
-            min-width: 120px;
-        }
-
-        .editor-tip {
-            margin-top: 15px;
-            padding: 12px;
-            background: #e7f3ff;
-            border-radius: 8px;
-            font-size: 0.85em;
-            border-left: 4px solid #2196F3;
-            color: #1976d2;
-            line-height: 1.6;
-        }
-
+        /* ===== LOG PANEL ===== */
         .log-panel {
-            margin-top: 25px;
-            background: #f8f9fa;
-            border-radius: 10px;
+            margin-top: 28px;
+            background: var(--white);
+            border: 2px solid var(--black);
+            border-radius: 12px;
             overflow: hidden;
             max-height: 200px;
             transition: max-height 0.3s;
         }
 
-        .log-panel.collapsed {
-            max-height: 45px;
-        }
+        .log-panel.collapsed { max-height: 48px; }
 
         .log-header {
-            background: #e9ecef;
-            padding: 12px 20px;
+            background: var(--black);
+            padding: 13px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            user-select: none;
         }
 
-        .log-header:hover {
-            background: #dee2e6;
-        }
-
-        .log-title {
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .log-toggle {
-            color: #6c757d;
-            font-size: 20px;
-            transition: transform 0.3s;
-        }
-
-        .log-panel.collapsed .log-toggle {
-            transform: rotate(180deg);
-        }
+        .log-title { font-weight: 900; color: var(--white); font-size: 13px; }
+        .log-toggle { color: var(--yellow); font-size: 18px; transition: transform 0.3s; }
+        .log-panel.collapsed .log-toggle { transform: rotate(180deg); }
 
         .log-content {
-            padding: 15px 20px;
-            max-height: 150px;
+            padding: 14px 20px;
+            max-height: 148px;
             overflow-y: auto;
             font-family: 'Consolas', monospace;
-            font-size: 12px;
-            line-height: 1.8;
+            font-size: 11px;
+            line-height: 1.9;
         }
 
-        .log-item {
-            padding: 3px 0;
-            color: #495057;
-        }
+        .log-item { color: var(--black); }
+        .log-item.success { color: var(--green); }
+        .log-item.warning { color: #B87700; }
+        .log-item.error { color: var(--red); }
 
-        .log-item.success {
-            color: #28a745;
-        }
-
-        .log-item.warning {
-            color: #ffc107;
-        }
-
-        .log-item.error {
-            color: #dc3545;
-        }
-
+        /* ===== FOOTER ===== */
         .footer {
-            background: #f8f9fa;
-            padding: 20px;
+            background: #FFF8F0;
+            border-top: 2px solid var(--black);
+            padding: 28px 32px;
             text-align: center;
-            color: #6c757d;
-            border-top: 2px solid #e9ecef;
-            font-size: 14px;
+            margin-top: 48px;
         }
 
-        /* 延伸模式選擇器 */
+        .footer-btn-row { margin-bottom: 16px; }
 
-        @media (max-width: 1200px) {
-            .result-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .footer-credit {
+            font-size: 12px;
+            color: #BA7517;
+            font-weight: 600;
         }
 
-        @media (max-width: 768px) {
-            .result-grid {
-                grid-template-columns: 1fr;
-            }
+        .footer-credit a { color: var(--red); text-decoration: none; }
 
-            .summary-grid {
-                grid-template-columns: 1fr;
-            }
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1100px) {
+            .result-grid { grid-template-columns: repeat(2, 1fr); }
+        }
 
-            .features {
-                gap: 20px;
-            }
+        @media (max-width: 700px) {
+            .features-inner { flex-wrap: wrap; }
+            .feature-pill { flex: 0 0 33.33%; border-bottom: 2px solid rgba(0,0,0,0.12); }
+            .result-grid { grid-template-columns: 1fr; }
+            .manual-editor { width: 96%; }
+            .header-inner { flex-direction: column; align-items: flex-start; }
+        }
 
-            .manual-editor {
-                width: 95%;
-                padding: 20px;
-            }
-
-            .editor-actions {
-                grid-template-columns: 1fr;
-            }
+        /* Decorative blob */
+        .deco-blob {
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.06;
+            pointer-events: none;
+            z-index: 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="version-badge">v6.2</div>
-            <h1>🎯 MOMO 廣告圖修正器</h1>
-            <p>自動調整 × 批次處理 × 手動微調</p>
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <span class="feature-icon">📐</span>
-                <div class="feature-text">尺寸校正</div>
-                <div class="feature-subtext">1000×1000</div>
+
+    <!-- Decorative blobs -->
+    <div class="deco-blob" style="width:400px;height:400px;background:var(--yellow);top:-100px;right:-100px;"></div>
+    <div class="deco-blob" style="width:300px;height:300px;background:var(--red);bottom:200px;left:-80px;"></div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="header-title-block">
+                <div class="header-label">STARCOM</div>
+                <div class="header-title">廣告圖<span>修正器</span></div>
+                <div class="header-version">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/>
+                        <text x="7" y="10.5" text-anchor="middle" font-size="7" font-weight="900" fill="currentColor">v</text>
+                    </svg>
+                    v6.3
+                </div>
             </div>
-            <div class="feature">
-                <span class="feature-icon">📏</span>
-                <div class="feature-text">預設留白</div>
-                <div class="feature-subtext">90px</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">🎯</span>
-                <div class="feature-text">智慧偵測</div>
-                <div class="feature-subtext">靈敏度 80</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">⚙️</span>
-                <div class="feature-text">格式轉換</div>
-                <div class="feature-subtext">JPG</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">🎨</span>
-                <div class="feature-text">背景延伸</div>
-                <div class="feature-subtext">自然融合</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">📦</span>
-                <div class="feature-text">檔名清理</div>
-                <div class="feature-subtext">autoclean_日期</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">🔧</span>
-                <div class="feature-text">手動微調</div>
-                <div class="feature-subtext">即時預覽</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <div style="text-align:right;">
+                    <div style="font-size:11px;color:#BA7517;font-weight:700;margin-bottom:4px;">自動調整 × 批次處理 × 手動微調</div>
+                    <div style="font-size:10px;color:#C8A060;">廣告圖 1000×1000 ｜ 專推圖 1000×1500</div>
+                </div>
             </div>
         </div>
-        
-        <div class="main-content">
-            <!-- 上傳區域 -->
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📤</div>
-                <div class="upload-text">拖曳圖片到這裡或點擊選擇</div>
-                <div class="upload-hint">支援 JPG, PNG, GIF 格式 | 可批次上傳多張</div>
-                <input type="file" id="fileInput" accept="image/*" multiple>
-            </div>
+    </header>
 
-            <!-- 上傳預覽 -->
-            <div class="upload-preview-section" id="uploadPreviewSection">
-                <div class="upload-grid" id="uploadGrid"></div>
-                
-                <!-- 處理選項 -->
-                <div class="processing-options" id="processingOptions">
-                    <div class="options-header">
-                        <h4>📋 處理選項</h4>
-                    </div>
-                    
-                    <!-- 圖片類型選擇 -->
-                    <div class="image-type-selector">
-                        <label class="type-option">
-                            <input type="radio" name="imageType" value="ad" checked onchange="updateImageType()">
-                            <span class="type-label">
-                                <span class="type-icon">🎯</span>
-                                <span class="type-name">廣告圖</span>
-                                <span class="type-size">1000×1000</span>
-                            </span>
-                        </label>
-                        <label class="type-option">
-                            <input type="radio" name="imageType" value="promo" onchange="updateImageType()">
-                            <span class="type-label">
-                                <span class="type-icon">📱</span>
-                                <span class="type-name">專推圖</span>
-                                <span class="type-size">1000×1500</span>
-                            </span>
-                        </label>
-                    </div>
-                    
-                    <!-- 處理項目選擇 -->
-                    <div class="task-selector" id="adTaskSelector">
-                        <div class="task-header">處理項目（可多選）：</div>
-                        <div class="task-grid">
-                            <label class="task-option">
-                                <input type="checkbox" id="taskResize" checked>
-                                <span class="task-label">
-                                    <span class="task-icon">📐</span>
-                                    <span class="task-text">
-                                        <span class="task-name">尺寸校正</span>
-                                        <span class="task-desc">1000×1000</span>
-                                    </span>
-                                </span>
-                            </label>
-                            <label class="task-option">
-                                <input type="checkbox" id="taskFilename" checked>
-                                <span class="task-label">
-                                    <span class="task-icon">📝</span>
-                                    <span class="task-text">
-                                        <span class="task-name">檔名清理</span>
-                                        <span class="task-desc">去中文符號</span>
-                                    </span>
-                                </span>
-                            </label>
-                            <label class="task-option">
-                                <input type="checkbox" id="taskContent" checked>
-                                <span class="task-label">
-                                    <span class="task-icon">🎨</span>
-                                    <span class="task-text">
-                                        <span class="task-name">內容修正</span>
-                                        <span class="task-desc">背景+留白</span>
-                                    </span>
-                                </span>
-                            </label>
-                            <label class="task-option">
-                                <input type="checkbox" id="taskCompress" checked>
-                                <span class="task-label">
-                                    <span class="task-icon">💾</span>
-                                    <span class="task-text">
-                                        <span class="task-name">檔案壓縮</span>
-                                        <span class="task-desc">< 500KB</span>
-                                    </span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- 專推圖選項 -->
-                    <div class="task-selector" id="promoTaskSelector" style="display: none;">
-                        <div class="task-header">處理項目（可多選）：</div>
-                        <div class="task-grid">
-                            <label class="task-option">
-                                <input type="checkbox" id="promoTaskResize" checked>
-                                <span class="task-label">
-                                    <span class="task-icon">📐</span>
-                                    <span class="task-text">
-                                        <span class="task-name">尺寸校正</span>
-                                        <span class="task-desc">1000×1500</span>
-                                    </span>
-                                </span>
-                            </label>
-                            <label class="task-option">
-                                <input type="checkbox" id="promoTaskFilename" checked>
-                                <span class="task-label">
-                                    <span class="task-icon">📝</span>
-                                    <span class="task-text">
-                                        <span class="task-name">檔名清理</span>
-                                        <span class="task-desc">去中文符號</span>
-                                    </span>
-                                </span>
-                            </label>
-                            <label class="task-option">
-                                <input type="checkbox" id="promoTaskCompress" checked>
-                                <span class="task-label">
-                                    <span class="task-icon">💾</span>
-                                    <span class="task-text">
-                                        <span class="task-name">檔案壓縮</span>
-                                        <span class="task-desc">< 500KB</span>
-                                    </span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
+    <!-- ===== FEATURES STRIP ===== -->
+    <div class="features-strip">
+        <div class="features-inner">
+            <!-- 尺寸校正 -->
+            <div class="feature-pill">
+                <div class="feature-icon-wrap">
+                    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="30" height="30" rx="4" fill="white" stroke="#1A1A1A" stroke-width="2.5"/>
+                        <rect x="10" y="10" width="18" height="18" rx="2" fill="#1A1A1A"/>
+                        <line x1="4" y1="19" x2="10" y2="19" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="28" y1="19" x2="34" y2="19" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="19" y1="4" x2="19" y2="10" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="19" y1="28" x2="19" y2="34" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                 </div>
-                
-                <div class="start-section">
-                    <button class="btn" onclick="startProcessing()">🚀 開始處理</button>
+                <div class="feature-text-block">
+                    <div class="feature-name">尺寸校正</div>
+                    <div class="feature-sub">1000×1000</div>
                 </div>
             </div>
-
-            <!-- 處理中 -->
-            <div class="progress-area" id="progressArea">
-                <div id="progressText" style="text-align: center; margin-bottom: 10px; font-weight: bold;">
-                    處理中...
+            <!-- 預設留白 -->
+            <div class="feature-pill">
+                <div class="feature-icon-wrap">
+                    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="32" height="32" rx="4" stroke="#1A1A1A" stroke-width="2.5" stroke-dasharray="5 3"/>
+                        <rect x="10" y="10" width="18" height="18" rx="3" fill="#1A1A1A"/>
+                        <path d="M3 3L10 10M35 3L28 10M3 35L10 28M35 35L28 28" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+                <div class="feature-text-block">
+                    <div class="feature-name">預設留白</div>
+                    <div class="feature-sub">90px</div>
                 </div>
             </div>
-
-            <!-- 結果區域 -->
-            <div class="download-area" id="downloadArea">
-                <div class="download-header">
-                    <h3>✅ 變身完成！</h3>
-                    <p>已自動調整尺寸與背景延伸（預設留白 90px）</p>
-                    <p style="font-size: 13px; color: #667eea; margin-top: 8px;">
-                        💡 下載時可編輯檔名，檔案會存到瀏覽器預設的「下載」資料夾
-                    </p>
+            <!-- 智慧偵測 -->
+            <div class="feature-pill">
+                <div class="feature-icon-wrap">
+                    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="19" cy="19" r="15" stroke="#1A1A1A" stroke-width="2.5"/>
+                        <circle cx="19" cy="19" r="7" fill="#1A1A1A"/>
+                        <circle cx="19" cy="19" r="2" fill="white"/>
+                        <path d="M19 4V8M19 30V34M4 19H8M30 19H34" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                 </div>
-
-                <div class="batch-actions">
-                    <button class="btn btn-success" onclick="downloadAll()">💾 全部下載</button>
-                    <button class="btn btn-danger" onclick="resetAll()">🔄 重新開始</button>
+                <div class="feature-text-block">
+                    <div class="feature-name">智慧偵測</div>
+                    <div class="feature-sub">靈敏度 80</div>
                 </div>
-
-                <div class="result-grid" id="resultGrid"></div>
             </div>
-
-            <!-- 處理日誌 -->
-            <div class="log-panel collapsed" id="logPanel">
-                <div class="log-header" onclick="toggleLog()">
-                    <span class="log-title">📋 處理日誌</span>
-                    <span class="log-toggle">▼</span>
+            <!-- 格式轉換 -->
+            <div class="feature-pill">
+                <div class="feature-icon-wrap">
+                    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="3" width="20" height="26" rx="3" fill="white" stroke="#1A1A1A" stroke-width="2.5"/>
+                        <path d="M22 3L32 13H22V3Z" fill="#1A1A1A"/>
+                        <rect x="3" y="22" width="32" height="13" rx="3" fill="#1A1A1A"/>
+                        <text x="19" y="32" text-anchor="middle" fill="white" font-size="7" font-weight="900" font-family="sans-serif">JPG</text>
+                    </svg>
                 </div>
-                <div class="log-content" id="logContent"></div>
+                <div class="feature-text-block">
+                    <div class="feature-name">格式轉換</div>
+                    <div class="feature-sub">JPG 輸出</div>
+                </div>
             </div>
-        </div>
-
-        <div class="footer">
-            <button class="btn btn-warning" onclick="exportLogs()" style="margin-bottom: 15px;">📊 匯出處理記錄</button>
-            <div>
-                Made with <a href="https://claude.ai" target="_blank">Claude</a> | 
-                Created by <strong>Alishia</strong> | 
-                Version <strong>v6.2</strong>
+            <!-- 背景延伸 -->
+            <div class="feature-pill">
+                <div class="feature-icon-wrap">
+                    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="30" height="30" rx="4" fill="#E8E3D8" stroke="#1A1A1A" stroke-width="2.5"/>
+                        <rect x="11" y="11" width="16" height="16" rx="2" fill="#1A1A1A"/>
+                        <path d="M4 14H11M4 19H11M4 24H11M27 14H34M27 19H34M27 24H34" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+                        <path d="M14 4V11M19 4V11M24 4V11M14 27V34M19 27V34M24 27V34" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+                    </svg>
+                </div>
+                <div class="feature-text-block">
+                    <div class="feature-name">背景延伸</div>
+                    <div class="feature-sub">自然融合</div>
+                </div>
+            </div>
+            <!-- 檔名清理 -->
+            <div class="feature-pill">
+                <div class="feature-icon-wrap">
+                    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5" y="8" width="28" height="22" rx="3" fill="white" stroke="#1A1A1A" stroke-width="2.5"/>
+                        <line x1="11" y1="15" x2="27" y2="15" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="11" y1="20" x2="22" y2="20" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M24 22L28 18L32 22" stroke="#D94F3D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="24" y1="22" x2="32" y2="14" stroke="#D94F3D" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="feature-text-block">
+                    <div class="feature-name">檔名清理</div>
+                    <div class="feature-sub">autoclean+日期</div>
+                </div>
+            </div>
+            <!-- 手動微調 -->
+            <div class="feature-pill">
+                <div class="feature-icon-wrap">
+                    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="19" cy="19" r="15" fill="white" stroke="#1A1A1A" stroke-width="2.5"/>
+                        <path d="M19 10V19L24 24" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13 7L10 4M25 7L28 4M7 13L4 10M31 13L34 10" stroke="#D94F3D" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="feature-text-block">
+                    <div class="feature-name">手動微調</div>
+                    <div class="feature-sub">即時預覽</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 手動微調彈窗 -->
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main">
+
+        <!-- Upload Area -->
+        <div class="upload-area" id="uploadArea">
+            <svg class="upload-icon-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Hand holding image - hand-drawn style -->
+                <rect x="18" y="28" width="44" height="34" rx="5" fill="#F5F0E8" stroke="#1A1A1A" stroke-width="3"/>
+                <!-- Image icon inside -->
+                <circle cx="28" cy="38" r="4" fill="#F5C842" stroke="#1A1A1A" stroke-width="2"/>
+                <path d="M18 55L30 43L38 51L46 41L62 55" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Arrow up -->
+                <path d="M40 22V10M40 10L34 16M40 10L46 16" stroke="#D94F3D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Dashed border effect -->
+                <rect x="14" y="24" width="52" height="42" rx="6" stroke="#1A1A1A" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
+            </svg>
+            <div class="upload-title">拖曳圖片或點擊選擇</div>
+            <div class="upload-hint">支援 JPG, PNG, GIF ｜ 可批次上傳多張</div>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+        </div>
+
+        <!-- Upload Preview -->
+        <div class="upload-preview-section" id="uploadPreviewSection">
+            <div class="upload-grid" id="uploadGrid"></div>
+
+            <!-- Processing Options -->
+            <div class="processing-options" id="processingOptions">
+                <div class="options-title">
+                    <svg class="options-title-icon" viewBox="0 0 28 28" fill="none">
+                        <rect x="2" y="2" width="24" height="24" rx="4" fill="#F5C842" stroke="#1A1A1A" stroke-width="2"/>
+                        <path d="M8 14H20M14 8V20" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    處理選項
+                </div>
+
+                <div class="image-type-selector">
+                    <label class="type-option">
+                        <input type="radio" name="imageType" value="ad" checked onchange="updateImageType()">
+                        <span class="type-label">
+                            <span class="type-icon">
+                                <svg viewBox="0 0 36 36" fill="none">
+                                    <rect x="3" y="3" width="30" height="30" rx="5" fill="#F5F0E8" stroke="#1A1A1A" stroke-width="2.5"/>
+                                    <rect x="10" y="10" width="16" height="16" rx="3" fill="#1A1A1A"/>
+                                    <circle cx="27" cy="9" r="4" fill="#F5C842" stroke="#1A1A1A" stroke-width="2"/>
+                                </svg>
+                            </span>
+                            <span class="type-name">廣告圖</span>
+                            <span class="type-size">1000×1000</span>
+                        </span>
+                    </label>
+                    <label class="type-option">
+                        <input type="radio" name="imageType" value="promo" onchange="updateImageType()">
+                        <span class="type-label">
+                            <span class="type-icon">
+                                <svg viewBox="0 0 36 36" fill="none">
+                                    <rect x="6" y="2" width="24" height="32" rx="5" fill="#F5F0E8" stroke="#1A1A1A" stroke-width="2.5"/>
+                                    <rect x="11" y="8" width="14" height="20" rx="2" fill="#1A1A1A"/>
+                                    <circle cx="18" cy="31" r="2" fill="#F5C842" stroke="#1A1A1A" stroke-width="1.5"/>
+                                </svg>
+                            </span>
+                            <span class="type-name">專推圖</span>
+                            <span class="type-size">1000×1500</span>
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Ad tasks -->
+                <div class="task-selector" id="adTaskSelector">
+                    <div class="task-header">處理項目（可多選）</div>
+                    <div class="task-grid">
+                        <label class="task-option">
+                            <input type="checkbox" id="taskResize" checked>
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <rect x="2" y="2" width="18" height="18" rx="3" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M2 2L8 8M20 2L14 8M2 20L8 14M20 20L14 14" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <div><div class="task-name">尺寸校正</div><div class="task-desc">1000×1000</div></div>
+                        </label>
+                        <label class="task-option">
+                            <input type="checkbox" id="taskFilename" checked>
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <rect x="3" y="2" width="12" height="16" rx="2" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M11 2L17 8H11V2Z" fill="#1A1A1A"/>
+                                <line x1="5" y1="11" x2="11" y2="11" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+                                <line x1="5" y1="14" x2="9" y2="14" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M14 15L17 12L20 15" stroke="#D94F3D" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <div><div class="task-name">檔名清理</div><div class="task-desc">去中文符號</div></div>
+                        </label>
+                        <label class="task-option">
+                            <input type="checkbox" id="taskContent" checked>
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <rect x="2" y="2" width="18" height="18" rx="3" fill="#E8E3D8" stroke="#1A1A1A" stroke-width="2"/>
+                                <rect x="7" y="7" width="8" height="8" rx="1" fill="#1A1A1A"/>
+                                <path d="M2 10H7M15 10H20M10 2V7M10 15V20" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+                            </svg>
+                            <div><div class="task-name">內容修正</div><div class="task-desc">背景+留白</div></div>
+                        </label>
+                        <label class="task-option">
+                            <input type="checkbox" id="taskCompress" checked>
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <path d="M11 2C6 2 2 6 2 11C2 16 6 20 11 20C16 20 20 16 20 11C20 6 16 2 11 2Z" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M8 11L11 14L14 11" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="11" y1="7" x2="11" y2="14" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <div><div class="task-name">檔案壓縮</div><div class="task-desc">&lt; 500KB</div></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Promo tasks -->
+                <div class="task-selector" id="promoTaskSelector" style="display:none;">
+                    <div class="task-header">處理項目（可多選）</div>
+                    <div class="task-grid">
+                        <label class="task-option">
+                            <input type="checkbox" id="promoTaskResize" checked>
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <rect x="2" y="2" width="18" height="18" rx="3" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M2 2L8 8M20 2L14 8M2 20L8 14M20 20L14 14" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <div><div class="task-name">尺寸校正</div><div class="task-desc">1000×1500</div></div>
+                        </label>
+                        <label class="task-option">
+                            <input type="checkbox" id="promoTaskFilename" checked>
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <rect x="3" y="2" width="12" height="16" rx="2" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M11 2L17 8H11V2Z" fill="#1A1A1A"/>
+                                <line x1="5" y1="11" x2="11" y2="11" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+                                <line x1="5" y1="14" x2="9" y2="14" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <div><div class="task-name">檔名清理</div><div class="task-desc">去中文符號</div></div>
+                        </label>
+                        <label class="task-option">
+                            <input type="checkbox" id="promoTaskCompress" checked>
+                            <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
+                                <path d="M11 2C6 2 2 6 2 11C2 16 6 20 11 20C16 20 20 16 20 11C20 6 16 2 11 2Z" stroke="#1A1A1A" stroke-width="2"/>
+                                <path d="M8 11L11 14L14 11" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="11" y1="7" x2="11" y2="14" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <div><div class="task-name">檔案壓縮</div><div class="task-desc">&lt; 500KB</div></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="start-section">
+                <button class="btn btn-yellow" onclick="startProcessing()">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path d="M6 4L14 9L6 14V4Z" fill="currentColor"/>
+                    </svg>
+                    開始處理
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-area" id="progressArea">
+            <div class="progress-text" id="progressText">處理中...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width:0%">0%</div>
+            </div>
+        </div>
+
+        <!-- Download Area -->
+        <div class="download-area" id="downloadArea">
+            <div class="download-header">
+                <div class="download-title">
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                        <circle cx="18" cy="18" r="16" fill="#DDFFF0" stroke="#1A1A1A" stroke-width="2.5"/>
+                        <path d="M11 18L16 23L25 13" stroke="#1A6B40" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    變身完成！
+                </div>
+                <div class="download-subtitle">已自動調整尺寸與背景延伸（預設留白 90px）</div>
+                <div style="font-size:12px;color:var(--blue);margin-top:6px;font-weight:700;">💡 下載時可編輯檔名，儲存至瀏覽器「下載」資料夾</div>
+            </div>
+
+            <div class="batch-actions">
+                <button class="btn btn-green" onclick="downloadAll()">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2V11M8 11L4 7M8 11L12 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="2" y1="14" x2="14" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                    全部下載
+                </button>
+                <button class="btn btn-red" onclick="resetAll()">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8C2 4.7 4.7 2 8 2C10.1 2 12 3.1 13 4.8M14 8C14 11.3 11.3 14 8 14C5.9 14 4 12.9 3 11.2" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M13 2V5H10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14V11H6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    重新開始
+                </button>
+            </div>
+
+            <div class="result-grid" id="resultGrid"></div>
+        </div>
+
+        <!-- Log Panel -->
+        <div class="log-panel collapsed" id="logPanel">
+            <div class="log-header" onclick="toggleLog()">
+                <span class="log-title">📋 處理日誌</span>
+                <span class="log-toggle">▼</span>
+            </div>
+            <div class="log-content" id="logContent"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-btn-row">
+            <button class="btn btn-yellow" onclick="exportLogs()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 8H11M5 5H11M5 11H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                匯出處理記錄
+            </button>
+        </div>
+        <div class="footer-credit">
+            Made with <a href="https://claude.ai" target="_blank">Claude</a> ｜ Created by <strong style="color:#1A1A1A">Alishia</strong> ｜ <strong style="color:var(--red)">v6.3</strong>
+        </div>
+    </div>
+
+    <!-- Manual Editor -->
     <div class="manual-editor-overlay" id="editorOverlay">
         <div class="manual-editor">
             <div class="editor-header">
-                <div class="editor-title">🔧 手動微調</div>
+                <div class="editor-title">手動微調</div>
                 <button class="editor-close" onclick="closeEditor()">×</button>
             </div>
-
             <div class="editor-preview">
                 <img id="editorImage" src="" alt="Preview">
             </div>
-
             <div class="editor-controls">
-                <!-- 內容縮放 -->
                 <div class="control-group">
                     <div class="control-label">
-                        <span>🔍 內容縮放</span>
+                        <span>內容縮放</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="scaleValue">100%</span>
-                            <input type="number" class="control-input" id="scaleInput" 
-                                   min="70" max="200" value="100"
-                                   onchange="updateFromInput('scale', this.value)">
+                            <input type="number" class="control-input" id="scaleInput" min="70" max="200" value="100" onchange="updateFromInput('scale',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="scaleRange" 
-                           min="70" max="200" value="100" step="5"
-                           oninput="updateParamAndPreview('scale', this.value)">
-                    <div class="control-desc">調整內容大小（70-200%，步進 5%）</div>
+                    <input type="range" id="scaleRange" min="70" max="200" value="100" step="5" oninput="updateParamAndPreview('scale',this.value)">
+                    <div class="control-desc">調整內容大小（70–200%，步進 5%）</div>
                 </div>
-
-                <!-- 留白距離 -->
                 <div class="control-group">
                     <div class="control-label">
-                        <span>📐 留白距離</span>
+                        <span>留白距離</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="paddingValue">90px</span>
-                            <input type="number" class="control-input" id="paddingInput" 
-                                   min="70" max="200" value="90"
-                                   onchange="updateFromInput('padding', this.value)">
+                            <input type="number" class="control-input" id="paddingInput" min="70" max="200" value="90" onchange="updateFromInput('padding',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="paddingRange" 
-                           min="70" max="200" value="90" step="5"
-                           oninput="updateParamAndPreview('padding', this.value)">
-                    <div class="control-desc">手動調整四周留白空間（70-200px）</div>
+                    <input type="range" id="paddingRange" min="70" max="200" value="90" step="5" oninput="updateParamAndPreview('padding',this.value)">
+                    <div class="control-desc">手動調整四周留白空間（70–200px）</div>
                 </div>
-
-                <!-- 輸出品質 -->
                 <div class="control-group">
                     <div class="control-label">
-                        <span>💎 輸出品質</span>
+                        <span>輸出品質</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="qualityValue">90%</span>
-                            <input type="number" class="control-input" id="qualityInput" 
-                                   min="70" max="100" value="90"
-                                   onchange="updateFromInput('quality', this.value)">
+                            <input type="number" class="control-input" id="qualityInput" min="70" max="100" value="90" onchange="updateFromInput('quality',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="qualityRange" 
-                           min="70" max="100" value="90" step="5"
-                           oninput="updateParamAndPreview('quality', this.value)">
+                    <input type="range" id="qualityRange" min="70" max="100" value="90" step="5" oninput="updateParamAndPreview('quality',this.value)">
                     <div class="control-desc">品質越高檔案越大</div>
                 </div>
             </div>
-
             <div class="editor-actions">
-                <button class="btn btn-success btn-sm" onclick="applyAndUpdate()">
-                    ✨ 套用變更
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="resetParams()">
-                    🔄 重置為預設
-                </button>
+                <button class="btn btn-green btn-sm" onclick="applyAndUpdate()">✨ 套用變更</button>
+                <button class="btn btn-red btn-sm" onclick="resetParams()">🔄 重置預設</button>
             </div>
-
-            <div class="editor-tip">
-                <strong>💡 使用提示</strong><br>
-                拖曳滑桿或直接輸入數值調整參數，即時預覽效果。調整完成後點擊「套用變更」更新主畫面，然後回到主畫面下載。
+            <div style="margin-top:16px;padding:12px;background:var(--white);border:1.5px solid var(--light-gray);border-radius:10px;font-size:11px;color:var(--gray);line-height:1.7;font-weight:600;">
+                💡 拖曳滑桿或直接輸入數值，即時預覽效果。套用後回主畫面下載。
             </div>
         </div>
     </div>
 
     <script>
         const TARGET_SIZE = 1000;
-        const THRESHOLD = 80;  // 靈敏度 80
-        const DEFAULT_PADDING = 90;  // 預設留白 90px
-        let isUpdating = false;  // 防止重複更新
-        
-        // 延伸模式：'auto', 'extend', 'noextend'
-        // 延伸模式：預設為智能模式
+        const THRESHOLD = 80;
+        const DEFAULT_PADDING = 90;
+        let isUpdating = false;
         let extensionMode = 'auto';
-        
+
         const uploadArea = document.getElementById('uploadArea');
         const uploadPreviewSection = document.getElementById('uploadPreviewSection');
         const uploadGrid = document.getElementById('uploadGrid');
@@ -1540,68 +1513,26 @@
         const editorOverlay = document.getElementById('editorOverlay');
         const editorImage = document.getElementById('editorImage');
 
-        // 檢查關鍵元素是否正確載入
-        if (!uploadArea || !fileInput) {
-            console.error('❌ 上傳區域或檔案輸入元素未找到！');
-            console.error('uploadArea:', uploadArea);
-            console.error('fileInput:', fileInput);
-        } else {
-            console.log('✅ 上傳元素已正確載入');
-        }
-
         let uploadedFiles = [];
         let processedResults = [];
         let currentEditingImage = null;
         let currentEditingOriginalImage = null;
         let currentEditingIndex = null;
         let currentPreviewResult = null;
-
-        // 成功/失敗回報記錄
         let successfulSpecs = [];
         let failedSpecs = [];
 
-        // 上傳事件
-        if (uploadArea && fileInput) {
-            uploadArea.addEventListener('click', () => {
-                console.log('📤 上傳區域被點擊');
-                fileInput.click();
-            });
-            fileInput.addEventListener('change', (e) => {
-                console.log('📁 檔案已選擇:', e.target.files.length, '個檔案');
-                handleFileSelection(e.target.files);
-            });
-            console.log('✅ 點擊上傳事件已綁定');
-        }
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFileSelection(e.target.files));
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFileSelection(e.dataTransfer.files); });
 
-        // 拖曳事件
-        if (uploadArea) {
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-                console.log('🖐️ 拖曳中...');
-            });
-
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                console.log('📁 檔案已拖放:', e.dataTransfer.files.length, '個檔案');
-                handleFileSelection(e.dataTransfer.files);
-            });
-            console.log('✅ 拖曳事件已綁定');
-        }
-
-        // 處理檔案選擇
         function handleFileSelection(files) {
             if (files.length === 0) return;
-
             uploadedFiles = Array.from(files);
             uploadGrid.innerHTML = '';
             uploadPreviewSection.style.display = 'block';
-
             uploadedFiles.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -1619,59 +1550,38 @@
             });
         }
 
-        // 移除上傳
         function removeUpload(index) {
             uploadedFiles.splice(index, 1);
-            if (uploadedFiles.length === 0) {
-                uploadPreviewSection.style.display = 'none';
-            } else {
-                handleFileSelection(uploadedFiles);
-            }
+            if (uploadedFiles.length === 0) uploadPreviewSection.style.display = 'none';
+            else handleFileSelection(uploadedFiles);
         }
 
-        // 切換圖片類型（廣告圖/專推圖）
         function updateImageType() {
             const imageType = document.querySelector('input[name="imageType"]:checked').value;
-            const adTaskSelector = document.getElementById('adTaskSelector');
-            const promoTaskSelector = document.getElementById('promoTaskSelector');
-            
-            if (imageType === 'ad') {
-                adTaskSelector.style.display = 'block';
-                promoTaskSelector.style.display = 'none';
-            } else {
-                adTaskSelector.style.display = 'none';
-                promoTaskSelector.style.display = 'block';
-            }
+            document.getElementById('adTaskSelector').style.display = imageType === 'ad' ? 'block' : 'none';
+            document.getElementById('promoTaskSelector').style.display = imageType === 'promo' ? 'block' : 'none';
         }
 
-        // 開始處理
         async function startProcessing() {
             if (uploadedFiles.length === 0) return;
-
             processedResults = [];
             resultGrid.innerHTML = '';
             logContent.innerHTML = '';
-            
             uploadPreviewSection.style.display = 'none';
             progressArea.style.display = 'block';
             downloadArea.style.display = 'none';
-
             addLog('🚀 開始批次處理...', 'success');
             addLog(`📊 共 ${uploadedFiles.length} 張圖片`, 'success');
-
             for (let i = 0; i < uploadedFiles.length; i++) {
                 const progress = Math.round((i / uploadedFiles.length) * 100);
                 progressFill.style.width = progress + '%';
                 progressFill.textContent = progress + '%';
                 progressText.textContent = `處理中... (${i + 1}/${uploadedFiles.length})`;
-
                 await processImage(uploadedFiles[i], i + 1);
             }
-
             progressFill.style.width = '100%';
             progressFill.textContent = '100%';
             progressText.textContent = '完成！';
-
             setTimeout(() => {
                 progressArea.style.display = 'none';
                 downloadArea.style.display = 'block';
@@ -1679,63 +1589,41 @@
             }, 500);
         }
 
-        // 處理單張圖片
         async function processImage(file, index) {
             return new Promise((resolve) => {
                 addLog(`[${index}] 處理: ${file.name}`);
-
-                // 獲取圖片類型
                 const imageType = document.querySelector('input[name="imageType"]:checked').value;
                 const isPromo = imageType === 'promo';
-                
-                // 獲取處理選項
                 let taskResize, taskFilename, taskContent, taskCompress;
                 if (isPromo) {
                     taskResize = document.getElementById('promoTaskResize').checked;
                     taskFilename = document.getElementById('promoTaskFilename').checked;
                     taskCompress = document.getElementById('promoTaskCompress').checked;
-                    taskContent = false; // 專推圖不做內容修正
+                    taskContent = false;
                 } else {
                     taskResize = document.getElementById('taskResize').checked;
                     taskFilename = document.getElementById('taskFilename').checked;
                     taskContent = document.getElementById('taskContent').checked;
                     taskCompress = document.getElementById('taskCompress').checked;
                 }
-
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const img = new Image();
                     img.onload = async () => {
                         try {
-                            // 檔名處理
                             const sanitizedName = taskFilename ? sanitizeFilename(file.name) : file.name;
-                            if (taskFilename) {
-                                addLog(`  ✓ 檔名: ${sanitizedName}`);
-                            }
-
-                            // 處理圖片
+                            if (taskFilename) addLog(`  ✓ 檔名: ${sanitizedName}`);
                             let result;
                             if (isPromo) {
-                                // 專推圖處理
-                                result = await processPromoImage(img, sanitizedName, e.target.result, file.name, {
-                                    resize: taskResize,
-                                    compress: taskCompress
-                                });
+                                result = await processPromoImage(img, sanitizedName, e.target.result, file.name, { resize: taskResize, compress: taskCompress });
                             } else {
-                                // 廣告圖處理
                                 result = await transformImage(img, sanitizedName, e.target.result, file.name, {
-                                    scale: 115,
-                                    padding: DEFAULT_PADDING,
-                                    quality: 90,
-                                    resize: taskResize,
-                                    content: taskContent,
-                                    compress: taskCompress
+                                    scale: 115, padding: DEFAULT_PADDING, quality: 90,
+                                    resize: taskResize, content: taskContent, compress: taskCompress
                                 });
                             }
-                            
                             processedResults.push(result);
                             displayResult(result, processedResults.length - 1);
-                            
                             addLog(`  ✓ 完成: ${result.afterSize}`, 'success');
                             resolve();
                         } catch (error) {
@@ -1749,622 +1637,180 @@
             });
         }
 
-        // 智慧檔名修正（移除中文、括號等不合規符號）+ 日期
         function sanitizeFilename(filename) {
             let name = filename.replace(/\.[^/.]+$/, '');
-            
-            // 中文翻英對照表（擴充版）
             const chineseToEnglish = {
-                // 產品類型
-                '膠囊': 'capsule',
-                '爆水': 'baoshui',
-                '洗髮': 'shampoo',
-                '精華': 'essence',
-                '乳液': 'lotion',
-                '面霜': 'cream',
-                '面膜': 'mask',
-                '化妝水': 'toner',
-                '洗面乳': 'cleanser',
-                '卸妝': 'remover',
-                '防曬': 'sunscreen',
-                '眼霜': 'eyecream',
-                '護髮': 'conditioner',
-                '潤髮': 'conditioner',
-                '沐浴': 'shower',
-                '身體': 'body',
-                
-                // 品牌/產品線
-                '潘婷': 'pantene',
-                '飛柔': 'rejoice',
-                '海倫仙度絲': 'headshoulders',
-                '沙宣': 'vs',
-                '歐蕾': 'olay',
-                '吉列': 'gillette',
-                
-                // 功效
-                '保濕': 'moisturizing',
-                '美白': 'whitening',
-                '抗皺': 'antiaging',
-                '緊緻': 'firming',
-                '修護': 'repair',
-                '滋潤': 'nourishing',
-                '控油': 'oilcontrol',
-                '去屑': 'antidandruff',
-                '柔順': 'smooth',
-                '亮澤': 'shine',
-                
-                // 包裝/規格
-                '組合': 'set',
-                '超值': 'value',
-                '限定': 'limited',
-                '加大': 'large',
-                '旅行': 'travel',
-                '補充': 'refill',
-                '買送': 'bundle',
-                
-                // 數字
-                '一': '1',
-                '二': '2',
-                '三': '3',
-                '四': '4',
-                '五': '5',
-                '六': '6',
-                '七': '7',
-                '八': '8',
-                '九': '9',
-                '十': '10',
-                
-                // 單位
-                '毫升': 'ml',
-                '公克': 'g',
-                '入': 'pcs',
-                '瓶': 'bottle',
-                '罐': 'jar',
-                '盒': 'box'
+                '膠囊':'capsule','爆水':'baoshui','洗髮':'shampoo','精華':'essence','乳液':'lotion',
+                '面霜':'cream','面膜':'mask','化妝水':'toner','洗面乳':'cleanser','卸妝':'remover',
+                '防曬':'sunscreen','眼霜':'eyecream','護髮':'conditioner','潤髮':'conditioner',
+                '沐浴':'shower','身體':'body','潘婷':'pantene','飛柔':'rejoice','海倫仙度絲':'headshoulders',
+                '沙宣':'vs','歐蕾':'olay','吉列':'gillette','保濕':'moisturizing','美白':'whitening',
+                '抗皺':'antiaging','緊緻':'firming','修護':'repair','滋潤':'nourishing','控油':'oilcontrol',
+                '去屑':'antidandruff','柔順':'smooth','亮澤':'shine','組合':'set','超值':'value',
+                '限定':'limited','加大':'large','旅行':'travel','補充':'refill','買送':'bundle',
+                '一':'1','二':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9','十':'10',
+                '毫升':'ml','公克':'g','入':'pcs','瓶':'bottle','罐':'jar','盒':'box'
             };
-            
-            // 先進行中翻英替換
-            for (const [chinese, english] of Object.entries(chineseToEnglish)) {
-                name = name.replace(new RegExp(chinese, 'g'), english);
-            }
-            
-            // 剩餘的中文字元用拼音或移除
+            for (const [zh, en] of Object.entries(chineseToEnglish)) name = name.replace(new RegExp(zh, 'g'), en);
             name = name.replace(/[\u4e00-\u9fa5]/g, '');
-            
-            // 左括弧移除：( （ [ 【 {
             name = name.replace(/[(（\[【{]/g, '');
-            
-            // 右括弧改為底線：) ） ] 】 }
             name = name.replace(/[)）\]】}]/g, '_');
-            
-            // 替換其他不合規符號為底線
             name = name.replace(/[<>:"/\\|?*]/g, '_');
-            
-            // 空格轉底線
             name = name.replace(/\s+/g, '_');
-            
-            // 多個底線合併
             name = name.replace(/_+/g, '_');
-            
-            // 移除開頭結尾的底線
             name = name.replace(/^_|_$/g, '');
-            
             if (!name) name = 'image_' + Date.now();
             if (name.length > 50) name = name.substring(0, 50);
-            
-            // 加上日期 YYYYMMDD
             const today = new Date();
-            const dateStr = today.getFullYear() + 
-                           String(today.getMonth() + 1).padStart(2, '0') + 
-                           String(today.getDate()).padStart(2, '0');
-            
+            const dateStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
             return name + '_autoclean_' + dateStr + '.jpg';
         }
 
-        // 專推圖處理函數（1000×1500）
         async function processPromoImage(img, filename, originalDataUrl, originalName, options) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            
-            const originalWidth = img.width;
-            const originalHeight = img.height;
-            
-            let finalWidth = originalWidth;
-            let finalHeight = originalHeight;
+            const ow = img.width, oh = img.height;
             let quality = 90;
-            
-            // 如果需要調整尺寸
             if (options.resize) {
-                const targetWidth = 1000;
-                const targetHeight = 1500;
-                const targetRatio = targetWidth / targetHeight; // 0.667
-                const currentRatio = originalWidth / originalHeight;
-                
-                if (currentRatio > targetRatio) {
-                    // 圖片太寬，以高度為準
-                    finalHeight = targetHeight;
-                    finalWidth = Math.round(targetHeight * currentRatio);
-                } else {
-                    // 圖片太窄或剛好，以寬度為準
-                    finalWidth = targetWidth;
-                    finalHeight = Math.round(targetWidth / currentRatio);
-                }
-                
-                // 置中裁切
-                canvas.width = targetWidth;
-                canvas.height = targetHeight;
-                
-                const offsetX = (finalWidth - targetWidth) / 2;
-                const offsetY = (finalHeight - targetHeight) / 2;
-                
-                ctx.drawImage(img, -offsetX, -offsetY, finalWidth, finalHeight);
+                const tw = 1000, th = 1500;
+                const tr = tw/th, cr = ow/oh;
+                let fw, fh;
+                if (cr > tr) { fh = th; fw = Math.round(th * cr); }
+                else { fw = tw; fh = Math.round(tw / cr); }
+                canvas.width = tw; canvas.height = th;
+                ctx.drawImage(img, -(fw-tw)/2, -(fh-th)/2, fw, fh);
             } else {
-                // 不調整尺寸，直接使用原圖
-                canvas.width = originalWidth;
-                canvas.height = originalHeight;
+                canvas.width = ow; canvas.height = oh;
                 ctx.drawImage(img, 0, 0);
             }
-            
-            // 如果需要壓縮至 500KB 以下
             if (options.compress) {
-                quality = 90;
-                let dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
-                let sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
-                
-                // 逐步降低品質直到檔案小於 500KB
-                while (sizeKB > 500 && quality > 50) {
-                    quality -= 5;
-                    dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
-                    sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
-                }
-                
-                return {
-                    filename: filename,
-                    originalName: originalName,
-                    afterDataUrl: dataUrl,
-                    afterSize: sizeKB + ' KB',
-                    params: { quality, resize: options.resize, compress: options.compress },
-                    scale: 100,
-                    padding: 0,
-                    quality: quality,
-                    edgeExtended: false,
-                    type: 'promo'
-                };
+                let dataUrl = canvas.toDataURL('image/jpeg', quality/100);
+                let sizeKB = Math.round((dataUrl.length*0.75)/1024);
+                while (sizeKB > 500 && quality > 50) { quality -= 5; dataUrl = canvas.toDataURL('image/jpeg', quality/100); sizeKB = Math.round((dataUrl.length*0.75)/1024); }
+                return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params: {quality}, scale: 100, padding: 0, quality, edgeExtended: false, type: 'promo' };
             } else {
-                const dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
-                const sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
-                
-                return {
-                    filename: filename,
-                    originalName: originalName,
-                    afterDataUrl: dataUrl,
-                    afterSize: sizeKB + ' KB',
-                    params: { quality, resize: options.resize, compress: false },
-                    scale: 100,
-                    padding: 0,
-                    quality: quality,
-                    edgeExtended: false,
-                    type: 'promo'
-                };
+                const dataUrl = canvas.toDataURL('image/jpeg', quality/100);
+                const sizeKB = Math.round((dataUrl.length*0.75)/1024);
+                return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params: {quality}, scale: 100, padding: 0, quality, edgeExtended: false, type: 'promo' };
             }
         }
 
-        // 圖片變身算法（廣告圖）
         async function transformImage(img, filename, originalDataUrl, originalName, params) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            
-            const originalWidth = img.width;
-            const originalHeight = img.height;
-            
-            addLog(`  📐 原始: ${originalWidth}×${originalHeight}`);
-            
-            // 如果不需要做內容修正，簡單處理
+            const ow = img.width, oh = img.height;
+            addLog(`  📐 原始: ${ow}×${oh}`);
             if (params.content === false) {
-                // 只做尺寸調整和品質壓縮
                 if (params.resize) {
-                    canvas.width = TARGET_SIZE;
-                    canvas.height = TARGET_SIZE;
-                    
-                    // 計算縮放比例（保持長寬比，置中裁切）
-                    const scale = Math.max(TARGET_SIZE / originalWidth, TARGET_SIZE / originalHeight);
-                    const newW = originalWidth * scale;
-                    const newH = originalHeight * scale;
-                    const offsetX = (TARGET_SIZE - newW) / 2;
-                    const offsetY = (TARGET_SIZE - newH) / 2;
-                    
-                    ctx.drawImage(img, offsetX, offsetY, newW, newH);
+                    canvas.width = TARGET_SIZE; canvas.height = TARGET_SIZE;
+                    const scale = Math.max(TARGET_SIZE/ow, TARGET_SIZE/oh);
+                    const nw = ow*scale, nh = oh*scale;
+                    ctx.drawImage(img, (TARGET_SIZE-nw)/2, (TARGET_SIZE-nh)/2, nw, nh);
                 } else {
-                    // 保持原尺寸
-                    canvas.width = originalWidth;
-                    canvas.height = originalHeight;
+                    canvas.width = ow; canvas.height = oh;
                     ctx.drawImage(img, 0, 0);
                 }
-                
                 const quality = params.quality || 90;
-                const dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
-                const sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
-                
-                return {
-                    filename: filename,
-                    originalName: originalName,
-                    afterDataUrl: dataUrl,
-                    afterSize: sizeKB + ' KB',
-                    params: params,
-                    scale: params.scale || 100,
-                    padding: 0,
-                    quality: quality,
-                    edgeExtended: false,
-                    type: 'ad-simple'
-                };
+                const dataUrl = canvas.toDataURL('image/jpeg', quality/100);
+                const sizeKB = Math.round((dataUrl.length*0.75)/1024);
+                return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params, scale: 100, padding: 0, quality, edgeExtended: false, type: 'ad-simple' };
             }
-            
-            // 完整內容修正（原有邏輯）
-            const scale = (params.scale || 115) / 100;  // 預設 115%
+            const scale = (params.scale || 115)/100;
             const targetPadding = params.padding || DEFAULT_PADDING;
-            const requiredSize = TARGET_SIZE - (targetPadding * 2);
-            
-            let finalScale = Math.min(requiredSize / originalWidth, requiredSize / originalHeight);
+            const requiredSize = TARGET_SIZE - (targetPadding*2);
+            let finalScale = Math.min(requiredSize/ow, requiredSize/oh);
             finalScale *= scale;
-            
-            const newW = Math.round(originalWidth * finalScale);
-            const newH = Math.round(originalHeight * finalScale);
-            
-            addLog(`  🔄 縮放: ${(finalScale * 100).toFixed(1)}%`);
+            const newW = Math.round(ow*finalScale), newH = Math.round(oh*finalScale);
+            addLog(`  🔄 縮放: ${(finalScale*100).toFixed(1)}%`);
             addLog(`  📏 留白: ${targetPadding}px`);
-            
-            // 創建畫布
-            canvas.width = TARGET_SIZE;
-            canvas.height = TARGET_SIZE;
-            
-            // 偵測背景色（只用四角）
+            canvas.width = TARGET_SIZE; canvas.height = TARGET_SIZE;
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = img.width;
-            tempCanvas.height = img.height;
+            tempCanvas.width = ow; tempCanvas.height = oh;
             const tempCtx = tempCanvas.getContext('2d');
             tempCtx.drawImage(img, 0, 0);
-            
-            const corners = [
-                tempCtx.getImageData(0, 0, 1, 1),
-                tempCtx.getImageData(img.width - 1, 0, 1, 1),
-                tempCtx.getImageData(0, img.height - 1, 1, 1),
-                tempCtx.getImageData(img.width - 1, img.height - 1, 1, 1)
-            ];
-            
-            let bgR = 0, bgG = 0, bgB = 0;
-            corners.forEach(corner => {
-                bgR += corner.data[0];
-                bgG += corner.data[1];
-                bgB += corner.data[2];
-            });
-            bgR = Math.round(bgR / 4);
-            bgG = Math.round(bgG / 4);
-            bgB = Math.round(bgB / 4);
-            
-            // 填充背景色（四角平均）
-            ctx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
-            ctx.fillRect(0, 0, TARGET_SIZE, TARGET_SIZE);
-            
-            // 縮放圖片到新的 canvas
+            const corners = [tempCtx.getImageData(0,0,1,1),tempCtx.getImageData(ow-1,0,1,1),tempCtx.getImageData(0,oh-1,1,1),tempCtx.getImageData(ow-1,oh-1,1,1)];
+            let bgR=0,bgG=0,bgB=0;
+            corners.forEach(c=>{bgR+=c.data[0];bgG+=c.data[1];bgB+=c.data[2];});
+            bgR=Math.round(bgR/4);bgG=Math.round(bgG/4);bgB=Math.round(bgB/4);
+            ctx.fillStyle=`rgb(${bgR},${bgG},${bgB})`;
+            ctx.fillRect(0,0,TARGET_SIZE,TARGET_SIZE);
             const scaledCanvas = document.createElement('canvas');
-            scaledCanvas.width = newW;
-            scaledCanvas.height = newH;
+            scaledCanvas.width=newW; scaledCanvas.height=newH;
             const scaledCtx = scaledCanvas.getContext('2d');
-            scaledCtx.drawImage(img, 0, 0, newW, newH);
-            
-            const pasteX = Math.floor((TARGET_SIZE - newW) / 2);
-            const pasteY = Math.floor((TARGET_SIZE - newH) / 2);
-            
-            // 根據延伸模式決定是否延伸
+            scaledCtx.drawImage(img,0,0,newW,newH);
+            const pasteX=Math.floor((TARGET_SIZE-newW)/2), pasteY=Math.floor((TARGET_SIZE-newH)/2);
             let shouldExtend = false;
-            
-            // 優先檢查個別圖片的設定
             if (params.forceEdgeExtension !== undefined) {
                 shouldExtend = params.forceEdgeExtension;
-                addLog(`  ${shouldExtend ? '🎨 個別設定：延伸' : '⭕ 個別設定：不延伸'}`);
+                addLog(`  ${shouldExtend?'🎨 個別設定：延伸':'⭕ 個別設定：不延伸'}`);
             } else if (extensionMode === 'extend') {
-                // 全局強制延伸
-                shouldExtend = true;
-                addLog(`  🎨 強制延伸模式`);
+                shouldExtend = true; addLog(`  🎨 強制延伸模式`);
             } else if (extensionMode === 'noextend') {
-                // 全局不延伸
-                shouldExtend = false;
-                addLog(`  ⭕ 不延伸模式`);
+                shouldExtend = false; addLog(`  ⭕ 不延伸模式`);
             } else {
-                // 智能模式：自動判斷
-                const edgeSafety = analyzeEdgeSafety(scaledCanvas, bgR, bgG, bgB);
+                const edgeSafety = analyzeEdgeSafety(scaledCanvas,bgR,bgG,bgB);
                 shouldExtend = edgeSafety.safeToExtend;
-                addLog(`  🧠 智能判斷: ${shouldExtend ? '延伸' : '不延伸'} (${edgeSafety.safeEdges}/4 邊安全)`);
+                addLog(`  🧠 智能判斷: ${shouldExtend?'延伸':'不延伸'} (${edgeSafety.safeEdges}/4 邊安全)`);
             }
-            
-            if (shouldExtend) {
-                await edgeExtension(ctx, scaledCanvas, newW, newH, pasteX, pasteY);
-            }
-            
-            ctx.drawImage(scaledCanvas, pasteX, pasteY);
-            
-            // 生成圖片並壓縮（如果需要）
+            if (shouldExtend) await edgeExtension(ctx,scaledCanvas,newW,newH,pasteX,pasteY);
+            ctx.drawImage(scaledCanvas,pasteX,pasteY);
             let quality = params.quality || 90;
-            let afterDataUrl = canvas.toDataURL('image/jpeg', quality / 100);
-            let sizeKB = (afterDataUrl.length * 0.75 / 1024);
-            
-            // 如果啟用壓縮且檔案 > 500KB，逐步降低品質
+            let afterDataUrl = canvas.toDataURL('image/jpeg',quality/100);
+            let sizeKB = (afterDataUrl.length*0.75/1024);
             if (params.compress && sizeKB > 500) {
                 addLog(`  💾 壓縮中: ${sizeKB.toFixed(0)}KB → 目標 < 500KB`);
-                while (sizeKB > 500 && quality > 50) {
-                    quality -= 5;
-                    afterDataUrl = canvas.toDataURL('image/jpeg', quality / 100);
-                    sizeKB = (afterDataUrl.length * 0.75 / 1024);
-                }
+                while (sizeKB > 500 && quality > 50) { quality-=5; afterDataUrl=canvas.toDataURL('image/jpeg',quality/100); sizeKB=(afterDataUrl.length*0.75/1024); }
                 addLog(`  ✓ 壓縮完成: ${sizeKB.toFixed(0)}KB (品質 ${quality}%)`);
             }
-            
-            return {
-                originalName: originalName,
-                beforeDataUrl: originalDataUrl,
-                afterDataUrl: afterDataUrl,
-                filename: filename,
-                beforeSize: `${originalWidth}×${originalHeight}`,
-                afterSize: `${sizeKB.toFixed(2)} KB`,
-                scale: `${(finalScale * 100).toFixed(1)}%`,
-                padding: `${targetPadding}px`,
-                sizeKB: parseFloat(sizeKB.toFixed(2)),
-                params: params,
-                originalImage: img,  // 保存原始圖片供微調使用
-                edgeExtended: shouldExtend  // 記錄是否延伸了邊緣
-            };
+            return { originalName, beforeDataUrl: originalDataUrl, afterDataUrl, filename, beforeSize: `${ow}×${oh}`, afterSize: `${sizeKB.toFixed(2)} KB`, scale: `${(finalScale*100).toFixed(1)}%`, padding: `${targetPadding}px`, sizeKB: parseFloat(sizeKB.toFixed(2)), params, originalImage: img, edgeExtended: shouldExtend };
         }
 
-        // 偵測內容邊界（threshold = 80）
-        function detectContentBounds(img) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            const corners = [
-                getPixel(data, 0, 0, canvas.width),
-                getPixel(data, canvas.width - 1, 0, canvas.width),
-                getPixel(data, 0, canvas.height - 1, canvas.width),
-                getPixel(data, canvas.width - 1, canvas.height - 1, canvas.width)
-            ];
-            
-            const bgR = Math.round(corners.reduce((sum, c) => sum + c.r, 0) / 4);
-            const bgG = Math.round(corners.reduce((sum, c) => sum + c.g, 0) / 4);
-            const bgB = Math.round(corners.reduce((sum, c) => sum + c.b, 0) / 4);
-            
-            let top = 0, bottom = canvas.height, left = 0, right = canvas.width;
-            
-            outer: for (let y = 0; y < canvas.height; y++) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const pixel = getPixel(data, x, y, canvas.width);
-                    const diff = Math.sqrt(
-                        Math.pow(pixel.r - bgR, 2) +
-                        Math.pow(pixel.g - bgG, 2) +
-                        Math.pow(pixel.b - bgB, 2)
-                    );
-                    if (diff > THRESHOLD) {
-                        top = Math.max(0, y - 2);
-                        break outer;
-                    }
-                }
-            }
-            
-            outer: for (let y = canvas.height - 1; y >= 0; y--) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const pixel = getPixel(data, x, y, canvas.width);
-                    const diff = Math.sqrt(
-                        Math.pow(pixel.r - bgR, 2) +
-                        Math.pow(pixel.g - bgG, 2) +
-                        Math.pow(pixel.b - bgB, 2)
-                    );
-                    if (diff > THRESHOLD) {
-                        bottom = Math.min(canvas.height, y + 2);
-                        break outer;
-                    }
-                }
-            }
-            
-            outer: for (let x = 0; x < canvas.width; x++) {
-                for (let y = 0; y < canvas.height; y++) {
-                    const pixel = getPixel(data, x, y, canvas.width);
-                    const diff = Math.sqrt(
-                        Math.pow(pixel.r - bgR, 2) +
-                        Math.pow(pixel.g - bgG, 2) +
-                        Math.pow(pixel.b - bgB, 2)
-                    );
-                    if (diff > THRESHOLD) {
-                        left = Math.max(0, x - 2);
-                        break outer;
-                    }
-                }
-            }
-            
-            outer: for (let x = canvas.width - 1; x >= 0; x--) {
-                for (let y = 0; y < canvas.height; y++) {
-                    const pixel = getPixel(data, x, y, canvas.width);
-                    const diff = Math.sqrt(
-                        Math.pow(pixel.r - bgR, 2) +
-                        Math.pow(pixel.g - bgG, 2) +
-                        Math.pow(pixel.b - bgB, 2)
-                    );
-                    if (diff > THRESHOLD) {
-                        right = Math.min(canvas.width, x + 2);
-                        break outer;
-                    }
-                }
-            }
-            
-            return { left, top, right, bottom, bgColor: { r: bgR, g: bgG, b: bgB } };
+        function analyzeEdgeSafety(canvas,bgR,bgG,bgB) {
+            const ctx=canvas.getContext('2d');
+            const w=canvas.width,h=canvas.height;
+            const s=Math.min(5,Math.floor(Math.min(w,h)*0.02));
+            const edges={top:ctx.getImageData(0,0,w,s),bottom:ctx.getImageData(0,h-s,w,s),left:ctx.getImageData(0,0,s,h),right:ctx.getImageData(w-s,0,s,h)};
+            let safeEdges=0;
+            for (const edgeData of Object.values(edges)) { if (checkEdgeUniformity(edgeData.data,bgR,bgG,bgB)) safeEdges++; }
+            return {safeToExtend:safeEdges===4,safeEdges};
         }
 
-        function getPixel(data, x, y, width) {
-            const index = (y * width + x) * 4;
-            return {
-                r: data[index],
-                g: data[index + 1],
-                b: data[index + 2],
-                a: data[index + 3]
-            };
+        function checkEdgeUniformity(data,bgR,bgG,bgB) {
+            const threshold=60;
+            let uniformPixels=0;
+            const total=data.length/4;
+            for (let i=0;i<data.length;i+=4) {
+                const diff=Math.sqrt(Math.pow(data[i]-bgR,2)+Math.pow(data[i+1]-bgG,2)+Math.pow(data[i+2]-bgB,2));
+                if (diff<threshold) uniformPixels++;
+            }
+            return (uniformPixels/total)>0.7;
         }
 
-        // 智能分析：邊緣是否安全延伸
-        function analyzeEdgeSafety(canvas, bgR, bgG, bgB) {
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width;
-            const h = canvas.height;
-            
-            // 採樣邊緣（5px寬度）
-            const sampleSize = Math.min(5, Math.floor(Math.min(w, h) * 0.02));
-            
-            const edges = {
-                top: ctx.getImageData(0, 0, w, sampleSize),
-                bottom: ctx.getImageData(0, h - sampleSize, w, sampleSize),
-                left: ctx.getImageData(0, 0, sampleSize, h),
-                right: ctx.getImageData(w - sampleSize, 0, sampleSize, h)
-            };
-            
-            let safeEdges = 0;
-            let totalEdges = 4;
-            
-            // 檢查每個邊緣
-            for (const [name, edgeData] of Object.entries(edges)) {
-                const isSafe = checkEdgeUniformity(edgeData.data, bgR, bgG, bgB);
-                if (isSafe) safeEdges++;
+        async function edgeExtension(ctx,srcCanvas,srcW,srcH,pasteX,pasteY) {
+            const srcCtx=srcCanvas.getContext('2d');
+            if (pasteY>0) {
+                const topRow=srcCtx.getImageData(0,0,srcW,1);
+                for (let y=0;y<pasteY;y++) ctx.putImageData(topRow,pasteX,y);
+                if (pasteX>0){const p=srcCtx.getImageData(0,0,1,1);for(let x=0;x<pasteX;x++)for(let y=0;y<pasteY;y++)ctx.putImageData(p,x,y);}
+                if (pasteX+srcW<TARGET_SIZE){const p=srcCtx.getImageData(srcW-1,0,1,1);for(let x=pasteX+srcW;x<TARGET_SIZE;x++)for(let y=0;y<pasteY;y++)ctx.putImageData(p,x,y);}
             }
-            
-            // 至少所有4個邊都安全才延伸（更嚴格）
-            return {
-                safeToExtend: safeEdges === 4,  // 改為 === 4
-                safeEdges: safeEdges,
-                totalEdges: totalEdges
-            };
-        }
-        
-        // 檢查邊緣是否均勻（接近背景色）
-        function checkEdgeUniformity(data, bgR, bgG, bgB) {
-            const threshold = 60; // 容忍度
-            let uniformPixels = 0;
-            const totalPixels = data.length / 4;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                
-                const diff = Math.sqrt(
-                    Math.pow(r - bgR, 2) +
-                    Math.pow(g - bgG, 2) +
-                    Math.pow(b - bgB, 2)
-                );
-                
-                // 差異小於閾值 = 接近背景
-                if (diff < threshold) {
-                    uniformPixels++;
-                }
+            if (pasteY+srcH<TARGET_SIZE) {
+                const bottomRow=srcCtx.getImageData(0,srcH-1,srcW,1);
+                for (let y=pasteY+srcH;y<TARGET_SIZE;y++) ctx.putImageData(bottomRow,pasteX,y);
+                if (pasteX>0){const p=srcCtx.getImageData(0,srcH-1,1,1);for(let x=0;x<pasteX;x++)for(let y=pasteY+srcH;y<TARGET_SIZE;y++)ctx.putImageData(p,x,y);}
+                if (pasteX+srcW<TARGET_SIZE){const p=srcCtx.getImageData(srcW-1,srcH-1,1,1);for(let x=pasteX+srcW;x<TARGET_SIZE;x++)for(let y=pasteY+srcH;y<TARGET_SIZE;y++)ctx.putImageData(p,x,y);}
             }
-            
-            // 超過 70% 像素接近背景 = 安全
-            return (uniformPixels / totalPixels) > 0.7;
+            if (pasteX>0) for(let x=0;x<pasteX;x++)for(let y=0;y<srcH;y++){const p=srcCtx.getImageData(0,y,1,1);ctx.putImageData(p,x,pasteY+y);}
+            if (pasteX+srcW<TARGET_SIZE) for(let x=pasteX+srcW;x<TARGET_SIZE;x++)for(let y=0;y<srcH;y++){const p=srcCtx.getImageData(srcW-1,y,1,1);ctx.putImageData(p,x,pasteY+y);}
         }
 
-        // v4.0 經典邊緣延伸算法
-        async function edgeExtension(ctx, srcCanvas, srcW, srcH, pasteX, pasteY) {
-            const srcCtx = srcCanvas.getContext('2d');
-            
-            // 上邊延伸
-            if (pasteY > 0) {
-                const topRow = srcCtx.getImageData(0, 0, srcW, 1);
-                for (let y = 0; y < pasteY; y++) {
-                    ctx.putImageData(topRow, pasteX, y);
-                }
-                
-                // 左上角
-                if (pasteX > 0) {
-                    const pixel = srcCtx.getImageData(0, 0, 1, 1);
-                    for (let x = 0; x < pasteX; x++) {
-                        for (let y = 0; y < pasteY; y++) {
-                            ctx.putImageData(pixel, x, y);
-                        }
-                    }
-                }
-                
-                // 右上角
-                if (pasteX + srcW < TARGET_SIZE) {
-                    const pixel = srcCtx.getImageData(srcW - 1, 0, 1, 1);
-                    for (let x = pasteX + srcW; x < TARGET_SIZE; x++) {
-                        for (let y = 0; y < pasteY; y++) {
-                            ctx.putImageData(pixel, x, y);
-                        }
-                    }
-                }
-            }
-            
-            // 下邊延伸
-            if (pasteY + srcH < TARGET_SIZE) {
-                const bottomRow = srcCtx.getImageData(0, srcH - 1, srcW, 1);
-                for (let y = pasteY + srcH; y < TARGET_SIZE; y++) {
-                    ctx.putImageData(bottomRow, pasteX, y);
-                }
-                
-                // 左下角
-                if (pasteX > 0) {
-                    const pixel = srcCtx.getImageData(0, srcH - 1, 1, 1);
-                    for (let x = 0; x < pasteX; x++) {
-                        for (let y = pasteY + srcH; y < TARGET_SIZE; y++) {
-                            ctx.putImageData(pixel, x, y);
-                        }
-                    }
-                }
-                
-                // 右下角
-                if (pasteX + srcW < TARGET_SIZE) {
-                    const pixel = srcCtx.getImageData(srcW - 1, srcH - 1, 1, 1);
-                    for (let x = pasteX + srcW; x < TARGET_SIZE; x++) {
-                        for (let y = pasteY + srcH; y < TARGET_SIZE; y++) {
-                            ctx.putImageData(pixel, x, y);
-                        }
-                    }
-                }
-            }
-            
-            // 左邊延伸
-            if (pasteX > 0) {
-                for (let x = 0; x < pasteX; x++) {
-                    for (let y = 0; y < srcH; y++) {
-                        const pixel = srcCtx.getImageData(0, y, 1, 1);
-                        ctx.putImageData(pixel, x, pasteY + y);
-                    }
-                }
-            }
-            
-            // 右邊延伸
-            if (pasteX + srcW < TARGET_SIZE) {
-                for (let x = pasteX + srcW; x < TARGET_SIZE; x++) {
-                    for (let y = 0; y < srcH; y++) {
-                        const pixel = srcCtx.getImageData(srcW - 1, y, 1, 1);
-                        ctx.putImageData(pixel, x, pasteY + y);
-                    }
-                }
-            }
-        }
-
-
-        // 顯示結果
         function displayResult(result, index) {
+            const isPromo = result.type === 'promo';
+            const displaySize = isPromo ? '1000×1500' : '1000×1000';
             const resultItem = document.createElement('div');
             resultItem.className = 'result-item';
             resultItem.id = `result-${index}`;
-            
-            // 判斷是否為專推圖
-            const isPromo = result.type === 'promo';
-            const displaySize = isPromo ? '1000×1500' : '1000×1000';
-            
-            // 基本結構
+
             let html = `
                 <button class="remove-result-btn" onclick="removeResult(${index})">×</button>
                 <div class="result-item-name">${result.filename}</div>
@@ -2372,7 +1818,7 @@
                     <div class="comparison-side">
                         <div class="comparison-label before">變身前</div>
                         <div class="comparison-image-wrapper">
-                            <img src="${result.beforeDataUrl || result.afterDataUrl}" alt="Before">
+                            <img src="${result.beforeDataUrl||result.afterDataUrl}" alt="Before">
                             <div class="comparison-size-label">${result.beforeSize}</div>
                         </div>
                     </div>
@@ -2386,710 +1832,282 @@
                 </div>
                 <div class="result-summary">
                     <div class="summary-grid">`;
-            
-            // 廣告圖顯示縮放和留白
+
             if (!isPromo) {
                 html += `
-                        <div class="summary-item">
-                            <div class="summary-label">縮放</div>
-                            <div class="summary-value">${result.scale || '100%'}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">留白</div>
-                            <div class="summary-value">${result.padding || '0px'}</div>
-                        </div>`;
+                        <div class="summary-item"><div class="summary-label">縮放</div><div class="summary-value">${result.scale||'100%'}</div></div>
+                        <div class="summary-item"><div class="summary-label">留白</div><div class="summary-value">${result.padding||'0px'}</div></div>`;
             }
-            
-            // 共同顯示項目
             html += `
-                        <div class="summary-item">
-                            <div class="summary-label">大小</div>
-                            <div class="summary-value">${result.afterSize}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">格式</div>
-                            <div class="summary-value">JPG</div>
-                        </div>
+                        <div class="summary-item"><div class="summary-label">大小</div><div class="summary-value">${result.afterSize}</div></div>
+                        <div class="summary-item"><div class="summary-label">格式</div><div class="summary-value">JPG</div></div>
                     </div>
                 </div>`;
-            
-            // 只有廣告圖才顯示背景處理模式
+
             if (!isPromo) {
                 html += `
-                <!-- 背景處理模式 -->
                 <div class="edge-extension-control">
                     <div class="edge-control-header">
-                        <span class="edge-control-title">🎨 背景處理模式</span>
-                        <span class="edge-control-current" id="edge-mode-${index}">
-                            ${result.edgeExtended ? '已延伸' : '未延伸'}
-                        </span>
+                        <span class="edge-control-title">背景處理模式</span>
+                        <span class="edge-control-current" id="edge-mode-${index}">${result.edgeExtended?'已延伸':'未延伸'}</span>
                     </div>
                     <div class="edge-control-buttons">
-                        <button class="edge-btn edge-btn-extend" onclick="forceExtend(${index})">
-                            <div class="edge-btn-icon">📐</div>
-                            <div class="edge-btn-text">強制延伸</div>
-                        </button>
-                        <button class="edge-btn edge-btn-no-extend" onclick="forceNoExtend(${index})">
-                            <div class="edge-btn-icon">🚫</div>
-                            <div class="edge-btn-text">不延伸</div>
-                        </button>
+                        <button class="edge-btn edge-btn-extend" onclick="forceExtend(${index})"><span class="edge-btn-text">強制延伸</span></button>
+                        <button class="edge-btn edge-btn-no-extend" onclick="forceNoExtend(${index})"><span class="edge-btn-text">不延伸</span></button>
                     </div>
                     <div class="edge-control-tips">
-                        <div class="edge-tip edge-tip-extend">
-                            <strong>📐 強制延伸：</strong>適合有底色背景的圖檔
-                        </div>
-                        <div class="edge-tip edge-tip-no-extend">
-                            <strong>🚫 不延伸：</strong>適合背景出現延展有誤的圖檔
-                        </div>
+                        <div class="edge-tip edge-tip-extend"><strong>強制延伸：</strong>適合有底色背景的圖檔</div>
+                        <div class="edge-tip edge-tip-no-extend"><strong>不延伸：</strong>適合背景出現延展有誤的圖檔</div>
                     </div>
                 </div>`;
             }
-            
-            // 操作按鈕（廣告圖有微調，專推圖沒有）
-            html += `
-                <div class="result-actions">
-                    <button class="btn btn-success btn-sm" onclick="downloadOne(${index})">💾 下載</button>`;
-            
-            if (!isPromo) {
-                html += `
-                    <button class="btn btn-warning btn-sm" onclick="openEditorFor(${index})">🔧 微調</button>`;
-            }
-            
-            html += `
-                </div>
-                
-                <!-- 回報成果區塊 -->
+
+            html += `<div class="result-actions">
+                    <button class="btn btn-green btn-sm" onclick="downloadOne(${index})">💾 下載</button>`;
+            if (!isPromo) html += `<button class="btn btn-yellow btn-sm" onclick="openEditorFor(${index})" style="color:var(--black)">🔧 微調</button>`;
+            html += `</div>
                 <div class="report-section">
                     <div class="report-label">回報成果</div>
                     <div class="report-buttons">
-                        <button class="btn btn-report btn-report-success" onclick="reportSuccess(${index})">
-                            ✅ 成功
-                        </button>
-                        <button class="btn btn-report btn-report-fail" onclick="reportFail(${index})">
-                            ❌ 失敗
-                        </button>
+                        <button class="btn-report btn-report-success" onclick="reportSuccess(${index})">✅ 成功</button>
+                        <button class="btn-report btn-report-fail" onclick="reportFail(${index})">❌ 失敗</button>
                     </div>
-                </div>
-            `;
-            
+                </div>`;
+
             resultItem.innerHTML = html;
-            
             resultGrid.appendChild(resultItem);
         }
 
-        // 移除結果
         function removeResult(index) {
-            const confirmed = confirm('確定要移除這個結果嗎？');
-            if (confirmed) {
-                const elem = document.getElementById(`result-${index}`);
-                if (elem) elem.remove();
-                processedResults[index] = null;
-                
-                // 檢查是否還有剩餘結果
-                const remainingResults = processedResults.filter(r => r !== null);
-                if (remainingResults.length === 0) {
-                    // 沒有剩餘結果，隱藏整個結果區域
-                    downloadArea.style.display = 'none';
-                    // 可選：顯示上傳區域讓用戶重新開始
-                    // uploadArea.style.display = 'block';
-                }
-            }
+            if (!confirm('確定要移除這個結果嗎？')) return;
+            const elem = document.getElementById(`result-${index}`);
+            if (elem) elem.remove();
+            processedResults[index] = null;
+            if (processedResults.filter(r=>r!==null).length === 0) downloadArea.style.display = 'none';
         }
 
-        // 下載單一結果
         function downloadOne(index) {
             const result = processedResults[index];
             if (!result) return;
-            
-            // 彈出對話框讓用戶編輯檔名
-            const currentFilename = result.filename.replace('.jpg', '');
-            
-            const newFilename = prompt(
-                '📝 編輯檔案名稱（不含副檔名）：\n\n' +
-                '提示：下載後檔案會儲存到瀏覽器預設的「下載」資料夾',
-                currentFilename
-            );
-            
-            // 如果用戶按取消，不下載
+            const newFilename = prompt('📝 編輯檔案名稱（不含副檔名）：', result.filename.replace('.jpg',''));
             if (newFilename === null) return;
-            
-            // 使用編輯後的檔名（或原檔名）
-            const finalFilename = (newFilename && newFilename.trim()) 
-                ? newFilename.trim() + '.jpg' 
-                : result.filename;
-            
-            // 下載檔案
-            fetch(result.afterDataUrl)
-                .then(res => res.blob())
-                .then(blob => {
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
-                    link.download = finalFilename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                });
+            const finalFilename = (newFilename&&newFilename.trim()) ? newFilename.trim()+'.jpg' : result.filename;
+            fetch(result.afterDataUrl).then(r=>r.blob()).then(blob=>{
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl; link.download = finalFilename;
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                setTimeout(()=>URL.revokeObjectURL(blobUrl),100);
+            });
         }
 
-        // 全部下載
         function downloadAll() {
-            const validResults = processedResults.filter(r => r !== null);
-            if (validResults.length === 0) return;
-            
-            const editMode = confirm(
-                `📦 即將下載 ${validResults.length} 個檔案到「下載」資料夾\n\n` +
-                '是否要逐一編輯檔名？\n\n' +
-                '「確定」= 逐一編輯每個檔名\n' +
-                '「取消」= 使用自動檔名直接下載'
-            );
-            
-            if (editMode) {
-                // 逐一編輯檔名並下載
-                let downloadIndex = 0;
-                processedResults.forEach((result, index) => {
-                    if (result) {
-                        setTimeout(() => {
-                            downloadOne(index);
-                        }, downloadIndex * 800);
-                        downloadIndex++;
+            const valid = processedResults.filter(r=>r!==null);
+            if (valid.length === 0) return;
+            const editMode = confirm(`📦 即將下載 ${valid.length} 個檔案\n\n「確定」= 逐一編輯檔名\n「取消」= 使用自動檔名下載`);
+            let i=0;
+            processedResults.forEach((result,index)=>{
+                if (result) {
+                    if (editMode) { setTimeout(()=>downloadOne(index), i*800); }
+                    else {
+                        setTimeout(()=>{
+                            fetch(result.afterDataUrl).then(r=>r.blob()).then(blob=>{
+                                const blobUrl=URL.createObjectURL(blob);
+                                const link=document.createElement('a');
+                                link.href=blobUrl; link.download=result.filename;
+                                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                                setTimeout(()=>URL.revokeObjectURL(blobUrl),100);
+                            });
+                        }, i*500);
                     }
-                });
-            } else {
-                // 直接下載，不編輯
-                let downloadIndex = 0;
-                processedResults.forEach((result, index) => {
-                    if (result) {
-                        setTimeout(() => {
-                            fetch(result.afterDataUrl)
-                                .then(res => res.blob())
-                                .then(blob => {
-                                    const blobUrl = URL.createObjectURL(blob);
-                                    const link = document.createElement('a');
-                                    link.href = blobUrl;
-                                    link.download = result.filename;
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                                });
-                        }, downloadIndex * 500);
-                        downloadIndex++;
-                    }
-                });
-            }
+                    i++;
+                }
+            });
         }
 
-        // 切換邊緣延伸狀態（僅切換開關，不立即處理）
-        function toggleEdgeExtension(index) {
-            const checkbox = document.getElementById(`edge-${index}`);
+        async function forceExtend(index) {
             const result = processedResults[index];
-            if (result) {
-                result.forceEdgeExtension = checkbox.checked;
-            }
+            if (!result) return;
+            if (!confirm('🎨 強制延伸邊緣\n\n適合：有底色背景的圖檔（如 Pantene）\n\n確定要重新處理？')) return;
+            addLog(`🎨 [${result.filename}] 強制延伸模式`);
+            const newResult = await transformImage(result.originalImage, result.filename, result.beforeDataUrl, result.originalName, {...result.params, forceEdgeExtension: true});
+            processedResults[index] = newResult;
+            updateResultDisplay(index, newResult);
+            addLog(`✅ [${result.filename}] 強制延伸完成`, 'success');
         }
 
-        // 重新處理圖片（應用邊緣延伸設定）
-        async function reprocessWithEdge(index) {
+        async function forceNoExtend(index) {
             const result = processedResults[index];
-            if (!result || !result.originalImage) return;
-            
-            const checkbox = document.getElementById(`edge-${index}`);
-            const enableEdge = checkbox.checked;
-            
-            // 顯示處理中
-            const resultElem = document.getElementById(`result-${index}`);
-            const applyBtn = resultElem.querySelector('.edge-apply-btn');
-            const originalText = applyBtn.textContent;
-            applyBtn.textContent = '⏳ 處理中...';
-            applyBtn.disabled = true;
-            
-            // 重新處理圖片（強制使用指定的邊緣延伸設定）
-            const newResult = await transformImage(
-                result.originalImage,
-                result.filename,
-                result.beforeDataUrl,
-                result.originalName,
-                { ...result.params, forceEdgeExtension: enableEdge }
-            );
-            
-            // 更新結果
-            processedResults[index] = {
-                ...newResult,
-                originalImage: result.originalImage,
-                forceEdgeExtension: enableEdge,
-                edgeExtended: enableEdge
-            };
-            
-            // 更新顯示
-            const afterImg = resultElem.querySelector('.comparison-label.after + .comparison-image-wrapper img');
-            afterImg.src = newResult.afterDataUrl;
-            
-            const sizeValue = resultElem.querySelector('.summary-grid .summary-item:nth-child(3) .summary-value');
-            sizeValue.textContent = newResult.afterSize;
-            
-            // 恢復按鈕
-            applyBtn.textContent = originalText;
-            applyBtn.disabled = false;
-            
-            addLog(`${enableEdge ? '✅ 已啟用' : '❌ 已停用'}邊緣延伸: ${result.filename}`, enableEdge ? 'success' : 'warning');
+            if (!result) return;
+            if (!confirm('🚫 不延伸邊緣\n\n適合：背景出現延展有誤的圖檔\n\n確定要重新處理？')) return;
+            addLog(`🚫 [${result.filename}] 不延伸模式`);
+            const newResult = await transformImage(result.originalImage, result.filename, result.beforeDataUrl, result.originalName, {...result.params, forceEdgeExtension: false});
+            processedResults[index] = newResult;
+            updateResultDisplay(index, newResult);
+            addLog(`✅ [${result.filename}] 不延伸完成`, 'success');
         }
 
-        // 開啟手動微調
+        function updateResultDisplay(index, result) {
+            const elem = document.getElementById(`result-${index}`);
+            if (!elem) return;
+            const afterImg = elem.querySelector('.comparison-label.after + .comparison-image-wrapper img');
+            if (afterImg) afterImg.src = result.afterDataUrl;
+            const summaryGrid = elem.querySelector('.summary-grid');
+            if (summaryGrid) summaryGrid.innerHTML = `
+                <div class="summary-item"><div class="summary-label">縮放</div><div class="summary-value">${result.scale}</div></div>
+                <div class="summary-item"><div class="summary-label">留白</div><div class="summary-value">${result.padding}</div></div>
+                <div class="summary-item"><div class="summary-label">大小</div><div class="summary-value">${result.afterSize}</div></div>
+                <div class="summary-item"><div class="summary-label">格式</div><div class="summary-value">JPG</div></div>`;
+            const edgeModeElem = document.getElementById(`edge-mode-${index}`);
+            if (edgeModeElem) edgeModeElem.textContent = result.edgeExtended?'已延伸':'未延伸';
+        }
+
         function openEditorFor(index) {
             const result = processedResults[index];
             if (!result) return;
-            
-            // 重要修正：使用變身後的圖（afterDataUrl）作為基準
-            // 而非原始圖（originalImage）
-            // 這樣才能保留背景處理模式的效果
             currentEditingImage = result.afterDataUrl;
-            
-            // 將變身後的圖轉為 Image 物件供微調使用
             const afterImage = new Image();
-            afterImage.onload = () => {
-                currentEditingOriginalImage = afterImage;
-            };
+            afterImage.onload = ()=>{ currentEditingOriginalImage = afterImage; };
             afterImage.src = result.afterDataUrl;
-            
             currentEditingIndex = index;
-            
             editorImage.src = result.afterDataUrl;
             editorOverlay.classList.add('active');
-            
-            // 設定當前參數（含輸入框）
-            const scale = result.params.scale || 100;
-            const padding = result.params.padding || DEFAULT_PADDING;
-            const quality = result.params.quality || 90;
-            
+            const scale = result.params.scale||100, padding = result.params.padding||DEFAULT_PADDING, quality = result.params.quality||90;
             document.getElementById('scaleRange').value = scale;
             document.getElementById('scaleInput').value = scale;
             document.getElementById('paddingRange').value = padding;
             document.getElementById('paddingInput').value = padding;
             document.getElementById('qualityRange').value = quality;
             document.getElementById('qualityInput').value = quality;
-            
-            updateParam('scale', scale);
-            updateParam('padding', padding);
-            updateParam('quality', quality);
-            
-            // 保存當前結果作為預覽基準
-            // 重要：保留原本的延伸模式設定
-            currentPreviewResult = {
-                ...result,
-                params: {
-                    scale: scale,
-                    padding: padding,
-                    quality: quality,
-                    forceEdgeExtension: result.params.forceEdgeExtension  // 保留延伸設定
-                }
-            };
+            updateParam('scale',scale); updateParam('padding',padding); updateParam('quality',quality);
+            currentPreviewResult = {...result, params:{scale,padding,quality,forceEdgeExtension:result.params.forceEdgeExtension}};
         }
 
-        // 關閉編輯器
-        function closeEditor() {
-            editorOverlay.classList.remove('active');
-            currentEditingImage = null;
-            currentEditingOriginalImage = null;
-            currentEditingIndex = null;
-            currentPreviewResult = null;
-        }
+        function closeEditor() { editorOverlay.classList.remove('active'); currentEditingImage=null; currentEditingOriginalImage=null; currentEditingIndex=null; currentPreviewResult=null; }
 
-        // 更新參數顯示
         function updateParam(param, value) {
-            const suffix = (param === 'quality' || param === 'scale') ? '%' : 'px';
-            requestAnimationFrame(() => {
-                document.getElementById(param + 'Value').textContent = value + suffix;
-            });
+            const suffix = (param==='quality'||param==='scale')?'%':'px';
+            requestAnimationFrame(()=>{ document.getElementById(param+'Value').textContent = value+suffix; });
         }
 
-        // 從輸入框更新
         function updateFromInput(param, value) {
             value = parseInt(value);
-            const rangeId = param + 'Range';
-            const inputId = param + 'Input';
-            
-            const rangeElem = document.getElementById(rangeId);
-            const min = parseInt(rangeElem.min);
-            const max = parseInt(rangeElem.max);
-            
-            if (value < min) value = min;
-            if (value > max) value = max;
-            
-            document.getElementById(rangeId).value = value;
-            document.getElementById(inputId).value = value;
-            
+            const rangeElem = document.getElementById(param+'Range');
+            const min=parseInt(rangeElem.min), max=parseInt(rangeElem.max);
+            if (value<min) value=min; if (value>max) value=max;
+            document.getElementById(param+'Range').value = value;
+            document.getElementById(param+'Input').value = value;
             updateParamAndPreview(param, value);
         }
 
-        // 更新參數並即時預覽
         let previewUpdateTimer = null;
-        let quickPreviewMode = false;
-        
+
         async function updateParamAndPreview(param, value) {
             updateParam(param, value);
-            
-            // 同步輸入框
-            const inputId = param + 'Input';
-            document.getElementById(inputId).value = value;
-            
-            if (!currentEditingOriginalImage) {
-                return;
+            document.getElementById(param+'Input').value = value;
+            if (!currentEditingOriginalImage) return;
+            if (param==='scale') {
+                const sv=parseInt(value)/100;
+                requestAnimationFrame(()=>{ editorImage.style.transform=`scale(${sv})`; editorImage.style.transition='transform 0.1s ease-out'; });
             }
-            
-            // 如果是縮放參數，使用快速 CSS 預覽
-            if (param === 'scale') {
-                quickPreviewMode = true;
-                const scaleValue = parseInt(value) / 100;
-                requestAnimationFrame(() => {
-                    editorImage.style.transform = `scale(${scaleValue})`;
-                    editorImage.style.transition = 'transform 0.1s ease-out';
-                });
-            }
-            
-            // 使用節流 - 300ms 內只執行一次真正的處理
-            if (previewUpdateTimer) {
-                clearTimeout(previewUpdateTimer);
-            }
-            
-            previewUpdateTimer = setTimeout(() => {
-                requestAnimationFrame(async () => {
+            if (previewUpdateTimer) clearTimeout(previewUpdateTimer);
+            previewUpdateTimer = setTimeout(()=>{
+                requestAnimationFrame(async()=>{
                     if (isUpdating) return;
                     isUpdating = true;
-                    
-                    const scale = parseInt(document.getElementById('scaleRange').value);
-                    const padding = parseInt(document.getElementById('paddingRange').value);
-                    const quality = parseInt(document.getElementById('qualityRange').value);
-                    
+                    const scale=parseInt(document.getElementById('scaleRange').value);
+                    const padding=parseInt(document.getElementById('paddingRange').value);
+                    const quality=parseInt(document.getElementById('qualityRange').value);
                     try {
-                        // 真正生成預覽 - 保留原本的延伸模式設定
-                        const params = { 
-                            scale, 
-                            padding, 
-                            quality,
-                            forceEdgeExtension: currentPreviewResult.params.forceEdgeExtension  // 保留延伸設定
-                        };
-                        
-                        const result = await transformImage(
-                            currentEditingOriginalImage,
-                            currentPreviewResult.filename,
-                            currentPreviewResult.beforeDataUrl,
-                            currentPreviewResult.originalName,
-                            params
-                        );
-                        
-                        // 移除 CSS transform，顯示真實結果
-                        if (quickPreviewMode) {
-                            editorImage.style.transform = '';
-                            editorImage.style.transition = '';
-                            quickPreviewMode = false;
-                        }
-                        
+                        const result = await transformImage(currentEditingOriginalImage, currentPreviewResult.filename, currentPreviewResult.beforeDataUrl, currentPreviewResult.originalName, {scale,padding,quality,forceEdgeExtension:currentPreviewResult.params.forceEdgeExtension});
+                        editorImage.style.transform=''; editorImage.style.transition='';
                         editorImage.src = result.afterDataUrl;
                         currentPreviewResult = result;
-                    } catch (error) {
-                        console.error('預覽更新失敗:', error);
-                    }
-                    
+                    } catch(e) { console.error(e); }
                     isUpdating = false;
                 });
             }, 300);
         }
 
-        // 套用並更新主畫面
         function applyAndUpdate() {
-            if (!currentPreviewResult || currentEditingIndex === null) return;
-            
+            if (!currentPreviewResult||currentEditingIndex===null) return;
             processedResults[currentEditingIndex] = currentPreviewResult;
-            const resultElem = document.getElementById(`result-${currentEditingIndex}`);
-            if (resultElem) {
-                resultElem.querySelector('.comparison-label.after + .comparison-image-wrapper img').src = currentPreviewResult.afterDataUrl;
-                resultElem.querySelector('.summary-grid').innerHTML = `
-                    <div class="summary-item">
-                        <div class="summary-label">縮放</div>
-                        <div class="summary-value">${currentPreviewResult.scale}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">留白</div>
-                        <div class="summary-value">${currentPreviewResult.padding}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">大小</div>
-                        <div class="summary-value">${currentPreviewResult.afterSize}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">格式</div>
-                        <div class="summary-value">JPG</div>
-                    </div>
-                `;
+            const elem = document.getElementById(`result-${currentEditingIndex}`);
+            if (elem) {
+                elem.querySelector('.comparison-label.after + .comparison-image-wrapper img').src = currentPreviewResult.afterDataUrl;
+                elem.querySelector('.summary-grid').innerHTML = `
+                    <div class="summary-item"><div class="summary-label">縮放</div><div class="summary-value">${currentPreviewResult.scale}</div></div>
+                    <div class="summary-item"><div class="summary-label">留白</div><div class="summary-value">${currentPreviewResult.padding}</div></div>
+                    <div class="summary-item"><div class="summary-label">大小</div><div class="summary-value">${currentPreviewResult.afterSize}</div></div>
+                    <div class="summary-item"><div class="summary-label">格式</div><div class="summary-value">JPG</div></div>`;
             }
-            
             alert('✅ 已套用變更到主畫面！');
         }
 
-        // 重置參數
         function resetParams() {
-            document.getElementById('scaleRange').value = 100;
-            document.getElementById('scaleInput').value = 100;
-            document.getElementById('paddingRange').value = DEFAULT_PADDING;
-            document.getElementById('paddingInput').value = DEFAULT_PADDING;
-            document.getElementById('qualityRange').value = 90;
-            document.getElementById('qualityInput').value = 90;
-            
-            updateParamAndPreview('scale', 100);
+            ['scale','padding','quality'].forEach(p=>{
+                const def = p==='padding'?DEFAULT_PADDING:(p==='scale'?100:90);
+                document.getElementById(p+'Range').value=def;
+                document.getElementById(p+'Input').value=def;
+                updateParamAndPreview(p,def);
+            });
         }
 
-        // 下載手動調整結果
-        // 回報成功
         function reportSuccess(index) {
-            const result = processedResults[index];
-            if (!result) return;
-            
-            const confirmed = confirm(
-                '確認這張圖片成功上傳到 MOMO 了嗎？\n\n' +
-                '這將幫助系統學習成功的處理參數。'
-            );
-            
-            if (confirmed) {
-                const spec = {
-                    timestamp: new Date().toISOString(),
-                    filename: result.filename,
-                    originalSize: result.beforeSize,
-                    finalSize: result.afterSize,
-                    scale: result.scale,
-                    padding: result.padding,
-                    threshold: THRESHOLD,
-                    quality: result.params.quality || 90,
-                    fileSize: result.sizeKB,
-                    status: 'success'
-                };
-                
-                successfulSpecs.push(spec);
-                localStorage.setItem('momoSuccessSpecs', JSON.stringify(successfulSpecs));
-                
-                console.log('✅ 成功回報:', spec);
-                console.log('📊 累積成功案例:', successfulSpecs.length);
-                
-                alert('✅ 已記錄成功案例！\n\n累積記錄: ' + successfulSpecs.length + ' 筆');
-                addLog(`✅ 成功回報: ${result.filename}`, 'success');
-            }
+            const result=processedResults[index]; if (!result) return;
+            if (!confirm('確認這張圖片成功上傳到 MOMO 了嗎？')) return;
+            const spec={timestamp:new Date().toISOString(),filename:result.filename,scale:result.scale,padding:result.padding,status:'success'};
+            successfulSpecs.push(spec);
+            localStorage.setItem('momoSuccessSpecs',JSON.stringify(successfulSpecs));
+            alert('✅ 已記錄成功案例！\n\n累積記錄: '+successfulSpecs.length+' 筆');
+            addLog(`✅ 成功回報: ${result.filename}`, 'success');
         }
 
-        // 回報失敗
         function reportFail(index) {
-            const result = processedResults[index];
-            if (!result) return;
-            
-            const reason = prompt(
-                '請簡述失敗原因：\n\n' +
-                '例如：物件被誤判、留白不足、檔案過大、促銷標籤被延伸等'
-            );
-            
-            if (reason) {
-                const spec = {
-                    timestamp: new Date().toISOString(),
-                    filename: result.filename,
-                    originalSize: result.beforeSize,
-                    finalSize: result.afterSize,
-                    scale: result.scale,
-                    padding: result.padding,
-                    threshold: THRESHOLD,
-                    quality: result.params.quality || 90,
-                    fileSize: result.sizeKB,
-                    status: 'failed',
-                    reason: reason
-                };
-                
-                failedSpecs.push(spec);
-                localStorage.setItem('momoFailedSpecs', JSON.stringify(failedSpecs));
-                
-                console.log('❌ 失敗回報:', spec);
-                console.log('📊 累積失敗案例:', failedSpecs.length);
-                
-                alert('❌ 已記錄失敗案例！\n\n累積記錄: ' + failedSpecs.length + ' 筆');
-                addLog(`❌ 失敗回報: ${result.filename} - ${reason}`, 'error');
-            }
+            const result=processedResults[index]; if (!result) return;
+            const reason=prompt('請簡述失敗原因：\n\n例如：物件被誤判、留白不足、檔案過大、促銷標籤被延伸等');
+            if (!reason) return;
+            const spec={timestamp:new Date().toISOString(),filename:result.filename,scale:result.scale,padding:result.padding,status:'failed',reason};
+            failedSpecs.push(spec);
+            localStorage.setItem('momoFailedSpecs',JSON.stringify(failedSpecs));
+            alert('❌ 已記錄失敗案例！\n\n累積記錄: '+failedSpecs.length+' 筆');
+            addLog(`❌ 失敗回報: ${result.filename} - ${reason}`, 'error');
         }
 
-        // 強制延伸
-        async function forceExtend(index) {
-            const result = processedResults[index];
-            if (!result) return;
-            
-            const confirmed = confirm(
-                '🎨 強制延伸邊緣\n\n' +
-                '適合：有底色背景的圖檔（如 Pantene）\n\n' +
-                '確定要重新處理這張圖片嗎？'
-            );
-            
-            if (confirmed) {
-                addLog(`🎨 [${result.filename}] 強制延伸模式`);
-                
-                // 重新處理圖片，強制延伸
-                const newParams = {
-                    ...result.params,
-                    forceEdgeExtension: true
-                };
-                
-                const img = result.originalImage;
-                const newResult = await transformImage(
-                    img,
-                    result.filename,
-                    result.beforeDataUrl,
-                    result.originalName,
-                    newParams
-                );
-                
-                // 更新結果
-                processedResults[index] = newResult;
-                
-                // 更新顯示
-                updateResultDisplay(index, newResult);
-                
-                addLog(`✅ [${result.filename}] 強制延伸完成`, 'success');
-            }
-        }
-
-        // 不延伸
-        async function forceNoExtend(index) {
-            const result = processedResults[index];
-            if (!result) return;
-            
-            const confirmed = confirm(
-                '🚫 不延伸邊緣\n\n' +
-                '適合：背景出現延展有誤的圖檔（如 Ariel 促銷標籤）\n\n' +
-                '確定要重新處理這張圖片嗎？'
-            );
-            
-            if (confirmed) {
-                addLog(`🚫 [${result.filename}] 不延伸模式`);
-                
-                // 重新處理圖片，不延伸
-                const newParams = {
-                    ...result.params,
-                    forceEdgeExtension: false
-                };
-                
-                const img = result.originalImage;
-                const newResult = await transformImage(
-                    img,
-                    result.filename,
-                    result.beforeDataUrl,
-                    result.originalName,
-                    newParams
-                );
-                
-                // 更新結果
-                processedResults[index] = newResult;
-                
-                // 更新顯示
-                updateResultDisplay(index, newResult);
-                
-                addLog(`✅ [${result.filename}] 不延伸完成`, 'success');
-            }
-        }
-
-        // 更新結果顯示
-        function updateResultDisplay(index, result) {
-            const resultElem = document.getElementById(`result-${index}`);
-            if (!resultElem) return;
-            
-            // 更新變身後圖片
-            const afterImg = resultElem.querySelector('.comparison-label.after + .comparison-image-wrapper img');
-            if (afterImg) afterImg.src = result.afterDataUrl;
-            
-            // 更新摘要
-            const summaryGrid = resultElem.querySelector('.summary-grid');
-            if (summaryGrid) {
-                summaryGrid.innerHTML = `
-                    <div class="summary-item">
-                        <div class="summary-label">縮放</div>
-                        <div class="summary-value">${result.scale}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">留白</div>
-                        <div class="summary-value">${result.padding}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">大小</div>
-                        <div class="summary-value">${result.afterSize}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">格式</div>
-                        <div class="summary-value">JPG</div>
-                    </div>
-                `;
-            }
-            
-            // 更新邊緣模式顯示
-            const edgeModeElem = document.getElementById(`edge-mode-${index}`);
-            if (edgeModeElem) {
-                edgeModeElem.textContent = result.edgeExtended ? '已延伸' : '未延伸';
-            }
-        }
-
-        // 匯出記錄
         function exportLogs() {
-            const logs = {
-                exportDate: new Date().toISOString(),
-                successCount: successfulSpecs.length,
-                failCount: failedSpecs.length,
-                successRate: (successfulSpecs.length / (successfulSpecs.length + failedSpecs.length) * 100).toFixed(2) + '%',
-                successfulCases: successfulSpecs,
-                failedCases: failedSpecs
-            };
-            
-            const dataStr = JSON.stringify(logs, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `momo_logs_${new Date().toISOString().split('T')[0]}.json`;
+            const logs={exportDate:new Date().toISOString(),successCount:successfulSpecs.length,failCount:failedSpecs.length,successfulCases:successfulSpecs,failedCases:failedSpecs};
+            const blob=new Blob([JSON.stringify(logs,null,2)],{type:'application/json'});
+            const url=URL.createObjectURL(blob);
+            const link=document.createElement('a');
+            link.href=url; link.download=`momo_logs_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
-            
             alert(`📊 已匯出記錄！\n\n成功: ${successfulSpecs.length} 筆\n失敗: ${failedSpecs.length} 筆`);
         }
 
-        // 重置全部
         function resetAll() {
-            uploadedFiles = [];
-            processedResults = [];
-            uploadPreviewSection.style.display = 'none';
-            downloadArea.style.display = 'none';
-            resultGrid.innerHTML = '';
-            fileInput.value = '';
+            uploadedFiles=[]; processedResults=[];
+            uploadPreviewSection.style.display='none';
+            downloadArea.style.display='none';
+            resultGrid.innerHTML='';
+            fileInput.value='';
         }
 
-        // 日誌功能
-        function toggleLog() {
-            logPanel.classList.toggle('collapsed');
+        function toggleLog() { logPanel.classList.toggle('collapsed'); }
+
+        function addLog(message, type='') {
+            const item=document.createElement('div');
+            item.className='log-item'+(type?' '+type:'');
+            item.textContent=message;
+            logContent.appendChild(item);
+            logContent.scrollTop=logContent.scrollHeight;
         }
 
-        function addLog(message, type = '') {
-            const logItem = document.createElement('div');
-            logItem.className = 'log-item' + (type ? ' ' + type : '');
-            logItem.textContent = message;
-            logContent.appendChild(logItem);
-            logContent.scrollTop = logContent.scrollHeight;
-        }
-
-        // 載入已儲存的記錄
-        (function() {
-            const savedSuccess = localStorage.getItem('momoSuccessSpecs');
-            const savedFailed = localStorage.getItem('momoFailedSpecs');
-            
-            if (savedSuccess) successfulSpecs = JSON.parse(savedSuccess);
-            if (savedFailed) failedSpecs = JSON.parse(savedFailed);
-            
-            console.log('🎯 MOMO 廣告圖修正器 v6.2 已就緒！');
-            console.log('📦 廣告圖：尺寸+檔名+內容+壓縮（2x2 網格選項）');
-            console.log('📱 專推圖：尺寸+檔名+壓縮（2x2 網格選項）');
-            console.log('💡 提示：瀏覽器安全限制，無法自訂儲存位置');
-            console.log('📊 已載入歷史記錄');
-            console.log('✅ 成功案例:', successfulSpecs.length);
-            console.log('❌ 失敗案例:', failedSpecs.length);
-            console.log('📐 預設留白: 90px | 靈敏度: 80');
+        (function(){
+            const ss=localStorage.getItem('momoSuccessSpecs');
+            const sf=localStorage.getItem('momoFailedSpecs');
+            if (ss) successfulSpecs=JSON.parse(ss);
+            if (sf) failedSpecs=JSON.parse(sf);
+            console.log('🎯 MOMO 廣告圖修正器 v6.3 已就緒！');
         })();
     </script>
 </body>
