@@ -1540,6 +1540,15 @@
         const editorOverlay = document.getElementById('editorOverlay');
         const editorImage = document.getElementById('editorImage');
 
+        // 檢查關鍵元素是否正確載入
+        if (!uploadArea || !fileInput) {
+            console.error('❌ 上傳區域或檔案輸入元素未找到！');
+            console.error('uploadArea:', uploadArea);
+            console.error('fileInput:', fileInput);
+        } else {
+            console.log('✅ 上傳元素已正確載入');
+        }
+
         let uploadedFiles = [];
         let processedResults = [];
         let currentEditingImage = null;
@@ -1552,24 +1561,38 @@
         let failedSpecs = [];
 
         // 上傳事件
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => handleFileSelection(e.target.files));
+        if (uploadArea && fileInput) {
+            uploadArea.addEventListener('click', () => {
+                console.log('📤 上傳區域被點擊');
+                fileInput.click();
+            });
+            fileInput.addEventListener('change', (e) => {
+                console.log('📁 檔案已選擇:', e.target.files.length, '個檔案');
+                handleFileSelection(e.target.files);
+            });
+            console.log('✅ 點擊上傳事件已綁定');
+        }
 
         // 拖曳事件
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+                console.log('🖐️ 拖曳中...');
+            });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFileSelection(e.dataTransfer.files);
-        });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                console.log('📁 檔案已拖放:', e.dataTransfer.files.length, '個檔案');
+                handleFileSelection(e.dataTransfer.files);
+            });
+            console.log('✅ 拖曳事件已綁定');
+        }
 
         // 處理檔案選擇
         function handleFileSelection(files) {
