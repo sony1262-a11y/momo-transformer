@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO 廣告圖修正器 v5.8</title>
+    <title>MOMO 廣告圖修正器 v6.2</title>
     <style>
         * {
             margin: 0;
@@ -208,6 +208,172 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        /* 處理選項 */
+        .processing-options {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .options-header h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .image-type-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .type-option {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .type-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .type-option input[type="radio"]:checked + .type-label {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .type-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .type-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .type-size {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .task-selector {
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+
+        .task-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 12px;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .task-option {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+        }
+
+        .task-option:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .task-option input[type="checkbox"]:checked + .task-label {
+            color: #667eea;
+        }
+
+        .task-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .task-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .task-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .task-name {
+            font-weight: 600;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .task-desc {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        /* 保留舊的 task-info CSS 以防需要 */
+        .task-info {
+            background: #f8f9ff;
+            border-left: 3px solid #667eea;
+            padding: 12px 15px;
+            border-radius: 6px;
+        }
+
+        .info-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .info-list {
+            font-size: 12px;
+            line-height: 1.8;
+            color: #495057;
+        }
+            font-size: 12px;
+            color: #6c757d;
         }
 
         .start-section {
@@ -1049,7 +1215,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="version-badge">v5.8</div>
+            <div class="version-badge">v6.2</div>
             <h1>🎯 MOMO 廣告圖修正器</h1>
             <p>自動調整 × 批次處理 × 手動微調</p>
         </div>
@@ -1104,6 +1270,118 @@
             <!-- 上傳預覽 -->
             <div class="upload-preview-section" id="uploadPreviewSection">
                 <div class="upload-grid" id="uploadGrid"></div>
+                
+                <!-- 處理選項 -->
+                <div class="processing-options" id="processingOptions">
+                    <div class="options-header">
+                        <h4>📋 處理選項</h4>
+                    </div>
+                    
+                    <!-- 圖片類型選擇 -->
+                    <div class="image-type-selector">
+                        <label class="type-option">
+                            <input type="radio" name="imageType" value="ad" checked onchange="updateImageType()">
+                            <span class="type-label">
+                                <span class="type-icon">🎯</span>
+                                <span class="type-name">廣告圖</span>
+                                <span class="type-size">1000×1000</span>
+                            </span>
+                        </label>
+                        <label class="type-option">
+                            <input type="radio" name="imageType" value="promo" onchange="updateImageType()">
+                            <span class="type-label">
+                                <span class="type-icon">📱</span>
+                                <span class="type-name">專推圖</span>
+                                <span class="type-size">1000×1500</span>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- 處理項目選擇 -->
+                    <div class="task-selector" id="adTaskSelector">
+                        <div class="task-header">處理項目（可多選）：</div>
+                        <div class="task-grid">
+                            <label class="task-option">
+                                <input type="checkbox" id="taskResize" checked>
+                                <span class="task-label">
+                                    <span class="task-icon">📐</span>
+                                    <span class="task-text">
+                                        <span class="task-name">尺寸校正</span>
+                                        <span class="task-desc">1000×1000</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <label class="task-option">
+                                <input type="checkbox" id="taskFilename" checked>
+                                <span class="task-label">
+                                    <span class="task-icon">📝</span>
+                                    <span class="task-text">
+                                        <span class="task-name">檔名清理</span>
+                                        <span class="task-desc">去中文符號</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <label class="task-option">
+                                <input type="checkbox" id="taskContent" checked>
+                                <span class="task-label">
+                                    <span class="task-icon">🎨</span>
+                                    <span class="task-text">
+                                        <span class="task-name">內容修正</span>
+                                        <span class="task-desc">背景+留白</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <label class="task-option">
+                                <input type="checkbox" id="taskCompress" checked>
+                                <span class="task-label">
+                                    <span class="task-icon">💾</span>
+                                    <span class="task-text">
+                                        <span class="task-name">檔案壓縮</span>
+                                        <span class="task-desc">< 500KB</span>
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- 專推圖選項 -->
+                    <div class="task-selector" id="promoTaskSelector" style="display: none;">
+                        <div class="task-header">處理項目（可多選）：</div>
+                        <div class="task-grid">
+                            <label class="task-option">
+                                <input type="checkbox" id="promoTaskResize" checked>
+                                <span class="task-label">
+                                    <span class="task-icon">📐</span>
+                                    <span class="task-text">
+                                        <span class="task-name">尺寸校正</span>
+                                        <span class="task-desc">1000×1500</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <label class="task-option">
+                                <input type="checkbox" id="promoTaskFilename" checked>
+                                <span class="task-label">
+                                    <span class="task-icon">📝</span>
+                                    <span class="task-text">
+                                        <span class="task-name">檔名清理</span>
+                                        <span class="task-desc">去中文符號</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <label class="task-option">
+                                <input type="checkbox" id="promoTaskCompress" checked>
+                                <span class="task-label">
+                                    <span class="task-icon">💾</span>
+                                    <span class="task-text">
+                                        <span class="task-name">檔案壓縮</span>
+                                        <span class="task-desc">< 500KB</span>
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="start-section">
                     <button class="btn" onclick="startProcessing()">🚀 開始處理</button>
                 </div>
@@ -1152,7 +1430,7 @@
             <div>
                 Made with <a href="https://claude.ai" target="_blank">Claude</a> | 
                 Created by <strong>Alishia</strong> | 
-                Version <strong>v5.8</strong>
+                Version <strong>v6.2</strong>
             </div>
         </div>
     </div>
@@ -1328,6 +1606,21 @@
             }
         }
 
+        // 切換圖片類型（廣告圖/專推圖）
+        function updateImageType() {
+            const imageType = document.querySelector('input[name="imageType"]:checked').value;
+            const adTaskSelector = document.getElementById('adTaskSelector');
+            const promoTaskSelector = document.getElementById('promoTaskSelector');
+            
+            if (imageType === 'ad') {
+                adTaskSelector.style.display = 'block';
+                promoTaskSelector.style.display = 'none';
+            } else {
+                adTaskSelector.style.display = 'none';
+                promoTaskSelector.style.display = 'block';
+            }
+        }
+
         // 開始處理
         async function startProcessing() {
             if (uploadedFiles.length === 0) return;
@@ -1363,25 +1656,59 @@
             }, 500);
         }
 
-        // 處理單張圖片（預設留白 110px）
+        // 處理單張圖片
         async function processImage(file, index) {
             return new Promise((resolve) => {
                 addLog(`[${index}] 處理: ${file.name}`);
+
+                // 獲取圖片類型
+                const imageType = document.querySelector('input[name="imageType"]:checked').value;
+                const isPromo = imageType === 'promo';
+                
+                // 獲取處理選項
+                let taskResize, taskFilename, taskContent, taskCompress;
+                if (isPromo) {
+                    taskResize = document.getElementById('promoTaskResize').checked;
+                    taskFilename = document.getElementById('promoTaskFilename').checked;
+                    taskCompress = document.getElementById('promoTaskCompress').checked;
+                    taskContent = false; // 專推圖不做內容修正
+                } else {
+                    taskResize = document.getElementById('taskResize').checked;
+                    taskFilename = document.getElementById('taskFilename').checked;
+                    taskContent = document.getElementById('taskContent').checked;
+                    taskCompress = document.getElementById('taskCompress').checked;
+                }
 
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const img = new Image();
                     img.onload = async () => {
                         try {
-                            const sanitizedName = sanitizeFilename(file.name);
-                            addLog(`  ✓ 檔名: ${sanitizedName}`);
+                            // 檔名處理
+                            const sanitizedName = taskFilename ? sanitizeFilename(file.name) : file.name;
+                            if (taskFilename) {
+                                addLog(`  ✓ 檔名: ${sanitizedName}`);
+                            }
 
-                            // 預設參數：留白 110px
-                            const result = await transformImage(img, sanitizedName, e.target.result, file.name, {
-                                scale: 100,
-                                padding: DEFAULT_PADDING,
-                                quality: 90
-                            });
+                            // 處理圖片
+                            let result;
+                            if (isPromo) {
+                                // 專推圖處理
+                                result = await processPromoImage(img, sanitizedName, e.target.result, file.name, {
+                                    resize: taskResize,
+                                    compress: taskCompress
+                                });
+                            } else {
+                                // 廣告圖處理
+                                result = await transformImage(img, sanitizedName, e.target.result, file.name, {
+                                    scale: 115,
+                                    padding: DEFAULT_PADDING,
+                                    quality: 90,
+                                    resize: taskResize,
+                                    content: taskContent,
+                                    compress: taskCompress
+                                });
+                            }
                             
                             processedResults.push(result);
                             displayResult(result, processedResults.length - 1);
@@ -1511,7 +1838,95 @@
             return name + '_autoclean_' + dateStr + '.jpg';
         }
 
-        // 圖片變身算法
+        // 專推圖處理函數（1000×1500）
+        async function processPromoImage(img, filename, originalDataUrl, originalName, options) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const originalWidth = img.width;
+            const originalHeight = img.height;
+            
+            let finalWidth = originalWidth;
+            let finalHeight = originalHeight;
+            let quality = 90;
+            
+            // 如果需要調整尺寸
+            if (options.resize) {
+                const targetWidth = 1000;
+                const targetHeight = 1500;
+                const targetRatio = targetWidth / targetHeight; // 0.667
+                const currentRatio = originalWidth / originalHeight;
+                
+                if (currentRatio > targetRatio) {
+                    // 圖片太寬，以高度為準
+                    finalHeight = targetHeight;
+                    finalWidth = Math.round(targetHeight * currentRatio);
+                } else {
+                    // 圖片太窄或剛好，以寬度為準
+                    finalWidth = targetWidth;
+                    finalHeight = Math.round(targetWidth / currentRatio);
+                }
+                
+                // 置中裁切
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                
+                const offsetX = (finalWidth - targetWidth) / 2;
+                const offsetY = (finalHeight - targetHeight) / 2;
+                
+                ctx.drawImage(img, -offsetX, -offsetY, finalWidth, finalHeight);
+            } else {
+                // 不調整尺寸，直接使用原圖
+                canvas.width = originalWidth;
+                canvas.height = originalHeight;
+                ctx.drawImage(img, 0, 0);
+            }
+            
+            // 如果需要壓縮至 500KB 以下
+            if (options.compress) {
+                quality = 90;
+                let dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
+                let sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
+                
+                // 逐步降低品質直到檔案小於 500KB
+                while (sizeKB > 500 && quality > 50) {
+                    quality -= 5;
+                    dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
+                    sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
+                }
+                
+                return {
+                    filename: filename,
+                    originalName: originalName,
+                    afterDataUrl: dataUrl,
+                    afterSize: sizeKB + ' KB',
+                    params: { quality, resize: options.resize, compress: options.compress },
+                    scale: 100,
+                    padding: 0,
+                    quality: quality,
+                    edgeExtended: false,
+                    type: 'promo'
+                };
+            } else {
+                const dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
+                const sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
+                
+                return {
+                    filename: filename,
+                    originalName: originalName,
+                    afterDataUrl: dataUrl,
+                    afterSize: sizeKB + ' KB',
+                    params: { quality, resize: options.resize, compress: false },
+                    scale: 100,
+                    padding: 0,
+                    quality: quality,
+                    edgeExtended: false,
+                    type: 'promo'
+                };
+            }
+        }
+
+        // 圖片變身算法（廣告圖）
         async function transformImage(img, filename, originalDataUrl, originalName, params) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -1521,8 +1936,48 @@
             
             addLog(`  📐 原始: ${originalWidth}×${originalHeight}`);
             
-            // 計算縮放（考慮 scale 和 padding）
-            const scale = (params.scale || 100) / 100;
+            // 如果不需要做內容修正，簡單處理
+            if (params.content === false) {
+                // 只做尺寸調整和品質壓縮
+                if (params.resize) {
+                    canvas.width = TARGET_SIZE;
+                    canvas.height = TARGET_SIZE;
+                    
+                    // 計算縮放比例（保持長寬比，置中裁切）
+                    const scale = Math.max(TARGET_SIZE / originalWidth, TARGET_SIZE / originalHeight);
+                    const newW = originalWidth * scale;
+                    const newH = originalHeight * scale;
+                    const offsetX = (TARGET_SIZE - newW) / 2;
+                    const offsetY = (TARGET_SIZE - newH) / 2;
+                    
+                    ctx.drawImage(img, offsetX, offsetY, newW, newH);
+                } else {
+                    // 保持原尺寸
+                    canvas.width = originalWidth;
+                    canvas.height = originalHeight;
+                    ctx.drawImage(img, 0, 0);
+                }
+                
+                const quality = params.quality || 90;
+                const dataUrl = canvas.toDataURL('image/jpeg', quality / 100);
+                const sizeKB = Math.round((dataUrl.length * 0.75) / 1024);
+                
+                return {
+                    filename: filename,
+                    originalName: originalName,
+                    afterDataUrl: dataUrl,
+                    afterSize: sizeKB + ' KB',
+                    params: params,
+                    scale: params.scale || 100,
+                    padding: 0,
+                    quality: quality,
+                    edgeExtended: false,
+                    type: 'ad-simple'
+                };
+            }
+            
+            // 完整內容修正（原有邏輯）
+            const scale = (params.scale || 115) / 100;  // 預設 115%
             const targetPadding = params.padding || DEFAULT_PADDING;
             const requiredSize = TARGET_SIZE - (targetPadding * 2);
             
@@ -1605,10 +2060,21 @@
             
             ctx.drawImage(scaledCanvas, pasteX, pasteY);
             
+            // 生成圖片並壓縮（如果需要）
+            let quality = params.quality || 90;
+            let afterDataUrl = canvas.toDataURL('image/jpeg', quality / 100);
+            let sizeKB = (afterDataUrl.length * 0.75 / 1024);
             
-            const quality = (params.quality || 90) / 100;
-            const afterDataUrl = canvas.toDataURL('image/jpeg', quality);
-            const sizeKB = (afterDataUrl.length * 0.75 / 1024).toFixed(2);
+            // 如果啟用壓縮且檔案 > 500KB，逐步降低品質
+            if (params.compress && sizeKB > 500) {
+                addLog(`  💾 壓縮中: ${sizeKB.toFixed(0)}KB → 目標 < 500KB`);
+                while (sizeKB > 500 && quality > 50) {
+                    quality -= 5;
+                    afterDataUrl = canvas.toDataURL('image/jpeg', quality / 100);
+                    sizeKB = (afterDataUrl.length * 0.75 / 1024);
+                }
+                addLog(`  ✓ 壓縮完成: ${sizeKB.toFixed(0)}KB (品質 ${quality}%)`);
+            }
             
             return {
                 originalName: originalName,
@@ -1616,10 +2082,10 @@
                 afterDataUrl: afterDataUrl,
                 filename: filename,
                 beforeSize: `${originalWidth}×${originalHeight}`,
-                afterSize: `${sizeKB} KB`,
+                afterSize: `${sizeKB.toFixed(2)} KB`,
                 scale: `${(finalScale * 100).toFixed(1)}%`,
                 padding: `${targetPadding}px`,
-                sizeKB: parseFloat(sizeKB),
+                sizeKB: parseFloat(sizeKB.toFixed(2)),
                 params: params,
                 originalImage: img,  // 保存原始圖片供微調使用
                 edgeExtended: shouldExtend  // 記錄是否延伸了邊緣
@@ -1871,14 +2337,19 @@
             resultItem.className = 'result-item';
             resultItem.id = `result-${index}`;
             
-            resultItem.innerHTML = `
+            // 判斷是否為專推圖
+            const isPromo = result.type === 'promo';
+            const displaySize = isPromo ? '1000×1500' : '1000×1000';
+            
+            // 基本結構
+            let html = `
                 <button class="remove-result-btn" onclick="removeResult(${index})">×</button>
                 <div class="result-item-name">${result.filename}</div>
                 <div class="result-comparison">
                     <div class="comparison-side">
                         <div class="comparison-label before">變身前</div>
                         <div class="comparison-image-wrapper">
-                            <img src="${result.beforeDataUrl}" alt="Before">
+                            <img src="${result.beforeDataUrl || result.afterDataUrl}" alt="Before">
                             <div class="comparison-size-label">${result.beforeSize}</div>
                         </div>
                     </div>
@@ -1886,20 +2357,28 @@
                         <div class="comparison-label after">變身後</div>
                         <div class="comparison-image-wrapper">
                             <img src="${result.afterDataUrl}" alt="After">
-                            <div class="comparison-size-label">1000×1000</div>
+                            <div class="comparison-size-label">${displaySize}</div>
                         </div>
                     </div>
                 </div>
                 <div class="result-summary">
-                    <div class="summary-grid">
+                    <div class="summary-grid">`;
+            
+            // 廣告圖顯示縮放和留白
+            if (!isPromo) {
+                html += `
                         <div class="summary-item">
                             <div class="summary-label">縮放</div>
-                            <div class="summary-value">${result.scale}</div>
+                            <div class="summary-value">${result.scale || '100%'}</div>
                         </div>
                         <div class="summary-item">
                             <div class="summary-label">留白</div>
-                            <div class="summary-value">${result.padding}</div>
-                        </div>
+                            <div class="summary-value">${result.padding || '0px'}</div>
+                        </div>`;
+            }
+            
+            // 共同顯示項目
+            html += `
                         <div class="summary-item">
                             <div class="summary-label">大小</div>
                             <div class="summary-value">${result.afterSize}</div>
@@ -1909,9 +2388,12 @@
                             <div class="summary-value">JPG</div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- 底圖處理模式 -->
+                </div>`;
+            
+            // 只有廣告圖才顯示背景處理模式
+            if (!isPromo) {
+                html += `
+                <!-- 背景處理模式 -->
                 <div class="edge-extension-control">
                     <div class="edge-control-header">
                         <span class="edge-control-title">🎨 背景處理模式</span>
@@ -1937,10 +2419,20 @@
                             <strong>🚫 不延伸：</strong>適合背景出現延展有誤的圖檔
                         </div>
                     </div>
-                </div>
+                </div>`;
+            }
+            
+            // 操作按鈕（廣告圖有微調，專推圖沒有）
+            html += `
                 <div class="result-actions">
-                    <button class="btn btn-success btn-sm" onclick="downloadOne(${index})">💾 下載</button>
-                    <button class="btn btn-warning btn-sm" onclick="openEditorFor(${index})">🔧 微調</button>
+                    <button class="btn btn-success btn-sm" onclick="downloadOne(${index})">💾 下載</button>`;
+            
+            if (!isPromo) {
+                html += `
+                    <button class="btn btn-warning btn-sm" onclick="openEditorFor(${index})">🔧 微調</button>`;
+            }
+            
+            html += `
                 </div>
                 
                 <!-- 回報成果區塊 -->
@@ -1952,6 +2444,12 @@
                         </button>
                         <button class="btn btn-report btn-report-fail" onclick="reportFail(${index})">
                             ❌ 失敗
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            resultItem.innerHTML = html;
                         </button>
                     </div>
                 </div>
@@ -2565,8 +3063,9 @@
             if (savedSuccess) successfulSpecs = JSON.parse(savedSuccess);
             if (savedFailed) failedSpecs = JSON.parse(savedFailed);
             
-            console.log('🎯 MOMO 廣告圖修正器 v5.8 已就緒！');
-            console.log('🎨 UI 優化：分隔線式回報區塊 + 按鈕置中對齊');
+            console.log('🎯 MOMO 廣告圖修正器 v6.2 已就緒！');
+            console.log('📦 廣告圖：尺寸+檔名+內容+壓縮（2x2 網格選項）');
+            console.log('📱 專推圖：尺寸+檔名+壓縮（2x2 網格選項）');
             console.log('💡 提示：瀏覽器安全限制，無法自訂儲存位置');
             console.log('📊 已載入歷史記錄');
             console.log('✅ 成功案例:', successfulSpecs.length);
