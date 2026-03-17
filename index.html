@@ -450,15 +450,23 @@
         }
 
         .task-info-only {
-            cursor: default;
-            background: #FFF8E8;
-            border-color: #F5C842;
+            background: var(--cream);
         }
 
         .task-info-only:hover {
-            border-color: #F5C842;
-            background: #FFF8E8;
+            border-color: var(--black);
+            background: var(--white);
             transform: none;
+        }
+
+        .task-info-only:has(input:checked) {
+            border-color: var(--black);
+            background: #FFF8E8;
+        }
+
+        .task-option:has(input:checked) {
+            border-color: var(--black);
+            background: #FFF8E8;
         }
 
         .task-badge {
@@ -1417,7 +1425,7 @@
                             <div><div class="task-name">檔案壓縮</div><div class="task-desc">&lt; 500KB</div></div>
                         </label>
                         <div class="task-option task-info-only">
-                            <input type="checkbox" checked style="width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#1A1A1A;">
+                            <input type="checkbox" id="taskFormat" checked style="width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#1A1A1A;">
                             <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
                                 <rect x="3" y="2" width="11" height="15" rx="2" stroke="#1A1A1A" stroke-width="2"/>
                                 <path d="M10 2L16 8H10V2Z" fill="#1A1A1A"/>
@@ -1425,8 +1433,8 @@
                                 <text x="11" y="20" text-anchor="middle" fill="white" font-size="5.5" font-weight="900" font-family="sans-serif">JPG</text>
                             </svg>
                             <div>
-                                <div class="task-name">格式轉換 <span class="task-badge">固定</span></div>
-                                <div class="task-desc">PNG / JPG / GIF / WebP → JPG</div>
+                                <div class="task-name">格式轉換</div>
+                                <div class="task-desc">PNG / GIF / WebP → JPG</div>
                             </div>
                         </div>
                     </div>
@@ -1464,7 +1472,7 @@
                             <div><div class="task-name">檔案壓縮</div><div class="task-desc">&lt; 500KB</div></div>
                         </label>
                         <div class="task-option task-info-only">
-                            <input type="checkbox" checked style="width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#1A1A1A;">
+                            <input type="checkbox" id="promoTaskFormat" checked style="width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#1A1A1A;">
                             <svg class="task-icon-svg" viewBox="0 0 22 22" fill="none">
                                 <rect x="3" y="2" width="11" height="15" rx="2" stroke="#1A1A1A" stroke-width="2"/>
                                 <path d="M10 2L16 8H10V2Z" fill="#1A1A1A"/>
@@ -1472,8 +1480,8 @@
                                 <text x="11" y="20" text-anchor="middle" fill="white" font-size="5.5" font-weight="900" font-family="sans-serif">JPG</text>
                             </svg>
                             <div>
-                                <div class="task-name">格式轉換 <span class="task-badge">固定</span></div>
-                                <div class="task-desc">PNG / JPG / GIF / WebP → JPG</div>
+                                <div class="task-name">格式轉換</div>
+                                <div class="task-desc">PNG / GIF / WebP → JPG</div>
                             </div>
                         </div>
                     </div>
@@ -1706,44 +1714,45 @@
                 addLog(`[${index}] 處理: ${file.name}`);
                 const imageType = document.querySelector('input[name="imageType"]:checked').value;
                 const isPromo = imageType === 'promo';
-                let taskResize, taskFilename, taskContent, taskCompress;
+                let taskResize, taskFilename, taskContent, taskCompress, taskFormat;
                 if (isPromo) {
                     taskResize = document.getElementById('promoTaskResize').checked;
                     taskFilename = document.getElementById('promoTaskFilename').checked;
                     taskCompress = document.getElementById('promoTaskCompress').checked;
+                    taskFormat = document.getElementById('promoTaskFormat').checked;
                     taskContent = false;
                 } else {
                     taskResize = document.getElementById('taskResize').checked;
                     taskFilename = document.getElementById('taskFilename').checked;
                     taskContent = document.getElementById('taskContent').checked;
                     taskCompress = document.getElementById('taskCompress').checked;
+                    taskFormat = document.getElementById('taskFormat').checked;
                 }
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const img = new Image();
                     img.onload = async () => {
                         try {
-                            const sanitizedName = taskFilename ? sanitizeFilename(file.name) : file.name;
+                            const sanitizedName = taskFilename ? sanitizeFilename(file.name, taskFormat) : (taskFormat ? forceJpgExt(file.name) : file.name);
                             if (taskFilename) addLog(`  ✓ 檔名: ${sanitizedName}`);
                             let result;
                             if (isPromo) {
-                                result = await processPromoImage(img, sanitizedName, e.target.result, file.name, { resize: taskResize, compress: taskCompress });
+                                result = await processPromoImage(img, sanitizedName, e.target.result, file.name, { resize: taskResize, compress: taskCompress, format: taskFormat });
                             } else {
                                 result = await transformImage(img, sanitizedName, e.target.result, file.name, {
                                     scale: 115, padding: DEFAULT_PADDING, quality: 90,
-                                    resize: taskResize, content: taskContent, compress: taskCompress
+                                    resize: taskResize, content: taskContent, compress: taskCompress, format: taskFormat
                                 });
                             }
-                            // task 旗標同時存進 params（供 forceExtend/forceNoExtend 重新處理時使用）
                             if (result.params) {
                                 result.params.resize = taskResize;
                                 result.params.content = taskContent;
                                 result.params.compress = taskCompress;
+                                result.params.format = taskFormat;
                             }
-                            // 把勾選項目存進 result 供結果卡片顯示
                             result.tasks = isPromo
-                                ? { resize: taskResize, filename: taskFilename, compress: taskCompress, format: true }
-                                : { resize: taskResize, filename: taskFilename, content: taskContent, compress: taskCompress, format: true };
+                                ? { resize: taskResize, filename: taskFilename, compress: taskCompress, format: taskFormat }
+                                : { resize: taskResize, filename: taskFilename, content: taskContent, compress: taskCompress, format: taskFormat };
                             processedResults.push(result);
                             displayResult(result, processedResults.length - 1);
                             addLog(`  ✓ 完成: ${result.afterSize}`, 'success');
@@ -1759,7 +1768,12 @@
             });
         }
 
-        function sanitizeFilename(filename) {
+        function forceJpgExt(filename) {
+            return filename.replace(/\.[^/.]+$/, '') + '.jpg';
+        }
+
+        function sanitizeFilename(filename, toJpg = true) {
+            const origExt = (filename.match(/\.([^.]+)$/) || ['', 'jpg'])[1].toLowerCase();
             let name = filename.replace(/\.[^/.]+$/, '');
             const chineseToEnglish = {
                 '膠囊':'capsule','爆水':'baoshui','洗髮':'shampoo','精華':'essence','乳液':'lotion',
@@ -1785,7 +1799,7 @@
             if (name.length > 50) name = name.substring(0, 50);
             const today = new Date();
             const dateStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
-            return name + '_autoclean_' + dateStr + '.jpg';
+            return name + '_autoclean_' + dateStr + (toJpg ? '.jpg' : ('.' + origExt));
         }
 
         async function processPromoImage(img, filename, originalDataUrl, originalName, options) {
@@ -1806,12 +1820,14 @@
                 ctx.drawImage(img, 0, 0);
             }
             if (options.compress) {
-                let dataUrl = canvas.toDataURL('image/jpeg', quality/100);
+                const mime = options.format ? 'image/jpeg' : 'image/png';
+                let dataUrl = canvas.toDataURL(mime, quality/100);
                 let sizeKB = Math.round((dataUrl.length*0.75)/1024);
-                while (sizeKB > 500 && quality > 50) { quality -= 5; dataUrl = canvas.toDataURL('image/jpeg', quality/100); sizeKB = Math.round((dataUrl.length*0.75)/1024); }
+                while (sizeKB > 500 && quality > 50) { quality -= 5; dataUrl = canvas.toDataURL(mime, quality/100); sizeKB = Math.round((dataUrl.length*0.75)/1024); }
                 return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params: {quality}, scale: 100, padding: 0, quality, edgeExtended: false, type: 'promo' };
             } else {
-                const dataUrl = canvas.toDataURL('image/jpeg', quality/100);
+                const mime = options.format ? 'image/jpeg' : 'image/png';
+                const dataUrl = canvas.toDataURL(mime, quality/100);
                 const sizeKB = Math.round((dataUrl.length*0.75)/1024);
                 return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params: {quality}, scale: 100, padding: 0, quality, edgeExtended: false, type: 'promo' };
             }
@@ -1822,7 +1838,7 @@
             const ctx = canvas.getContext('2d');
             const ow = img.width, oh = img.height;
             addLog(`  📐 原始: ${ow}×${oh}`);
-            if (params.content === false) {
+            if (params.content === false && params.forceEdgeExtension === undefined) {
                 if (params.resize) {
                     canvas.width = TARGET_SIZE; canvas.height = TARGET_SIZE;
                     const scale = Math.max(TARGET_SIZE/ow, TARGET_SIZE/oh);
@@ -1833,9 +1849,10 @@
                     ctx.drawImage(img, 0, 0);
                 }
                 const quality = params.quality || 90;
-                const dataUrl = canvas.toDataURL('image/jpeg', quality/100);
+                const mime = params.format !== false ? 'image/jpeg' : 'image/png';
+                const dataUrl = canvas.toDataURL(mime, quality/100);
                 const sizeKB = Math.round((dataUrl.length*0.75)/1024);
-                return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params, scale: 100, padding: 0, quality, edgeExtended: false, type: 'ad-simple' };
+                return { filename, originalName, beforeDataUrl: originalDataUrl, beforeSize: `${ow}×${oh}`, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params, scale: 100, padding: 0, quality, edgeExtended: false, type: 'ad-simple', originalImage: img };
             }
             const scale = (params.scale || 115)/100;
             const targetPadding = params.padding || DEFAULT_PADDING;
@@ -1877,11 +1894,12 @@
             if (shouldExtend) await edgeExtension(ctx,scaledCanvas,newW,newH,pasteX,pasteY);
             ctx.drawImage(scaledCanvas,pasteX,pasteY);
             let quality = params.quality || 90;
-            let afterDataUrl = canvas.toDataURL('image/jpeg',quality/100);
+            const mime = params.format !== false ? 'image/jpeg' : 'image/png';
+            let afterDataUrl = canvas.toDataURL(mime, quality/100);
             let sizeKB = (afterDataUrl.length*0.75/1024);
             if (params.compress && sizeKB > 500) {
                 addLog(`  💾 壓縮中: ${sizeKB.toFixed(0)}KB → 目標 < 500KB`);
-                while (sizeKB > 500 && quality > 50) { quality-=5; afterDataUrl=canvas.toDataURL('image/jpeg',quality/100); sizeKB=(afterDataUrl.length*0.75/1024); }
+                while (sizeKB > 500 && quality > 50) { quality-=5; afterDataUrl=canvas.toDataURL(mime,quality/100); sizeKB=(afterDataUrl.length*0.75/1024); }
                 addLog(`  ✓ 壓縮完成: ${sizeKB.toFixed(0)}KB (品質 ${quality}%)`);
             }
             return { originalName, beforeDataUrl: originalDataUrl, afterDataUrl, filename, beforeSize: `${ow}×${oh}`, afterSize: `${sizeKB.toFixed(2)} KB`, scale: `${(finalScale*100).toFixed(1)}%`, padding: `${targetPadding}px`, sizeKB: parseFloat(sizeKB.toFixed(2)), params, originalImage: img, edgeExtended: shouldExtend };
@@ -1958,13 +1976,13 @@
                 { l1: '尺寸', l2: '校正', done: result.tasks?.resize },
                 { l1: '檔名', l2: '清理', done: result.tasks?.filename },
                 { l1: '檔案', l2: '壓縮', done: result.tasks?.compress },
-                { l1: '格式', l2: '轉換', done: true },
+                { l1: '格式', l2: '轉換', done: result.tasks?.format },
             ] : [
                 { l1: '尺寸', l2: '校正', done: result.tasks?.resize },
                 { l1: '內容', l2: '修正', done: result.tasks?.content },
                 { l1: '檔名', l2: '清理', done: result.tasks?.filename },
                 { l1: '檔案', l2: '壓縮', done: result.tasks?.compress },
-                { l1: '格式', l2: '轉換', done: true },
+                { l1: '格式', l2: '轉換', done: result.tasks?.format },
             ];
             const taskRow = taskItems.map(t => `
                 <div class="checklist-row-item ${t.done ? 'done' : 'skip'}">
@@ -1985,11 +2003,13 @@
             }
             html += `
                         <div class="summary-item"><div class="summary-label">大小</div><div class="summary-value">${result.afterSize}</div></div>
-                        <div class="summary-item"><div class="summary-label">格式</div><div class="summary-value">JPG</div></div>
+                        <div class="summary-item"><div class="summary-label">格式</div><div class="summary-value">${result.tasks?.format ? 'JPG' : '原格式'}</div></div>
                     </div>
                 </div>`;
 
-            if (!isPromo) {
+            const showAdvanced = !isPromo && (result.tasks?.content || result.tasks?.resize);
+
+            if (showAdvanced) {
                 html += `
                 <div class="edge-extension-control">
                     <div class="edge-control-header">
@@ -2007,9 +2027,9 @@
                 </div>`;
             }
 
-            html += `<div class="result-actions">
-                    <button class="btn btn-green btn-sm" onclick="downloadOne(${index})">💾 下載</button>`;
-            if (!isPromo) html += `<button class="btn btn-yellow btn-sm" onclick="openEditorFor(${index})" style="color:var(--black)">🔧 微調</button>`;
+            html += `<div class="result-actions" style="${showAdvanced ? '' : 'grid-template-columns:1fr;'}">
+                    <button class="btn btn-green btn-sm" onclick="downloadOne(${index})" style="${showAdvanced ? '' : 'width:100%;justify-content:center;'}">💾 下載</button>`;
+            if (showAdvanced) html += `<button class="btn btn-yellow btn-sm" onclick="openEditorFor(${index})" style="color:var(--black)">🔧 微調</button>`;
 
             html += `</div>
                 <div class="report-section">
