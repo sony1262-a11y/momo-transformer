@@ -808,6 +808,79 @@
         .summary-label { font-size: 9px; color: var(--gray); font-weight: 700; margin-bottom: 2px; }
         .summary-value { font-size: 11px; font-weight: 900; color: var(--black); }
 
+        /* 四邊留白詳細 */
+        .margin-detail {
+            background: var(--cream);
+            border: 1.5px solid var(--light-gray);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+
+        .margin-detail-title {
+            font-size: 9px;
+            font-weight: 900;
+            color: var(--gray);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .margin-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+
+        .margin-item {
+            text-align: center;
+            padding: 6px 4px;
+            border-radius: 6px;
+            border: 1.5px solid;
+        }
+
+        .margin-item.ok {
+            background: #DDFFF0;
+            border-color: #4A8C5C;
+        }
+
+        .margin-item.warn {
+            background: #FFE8E6;
+            border-color: var(--red);
+        }
+
+        .margin-dir {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--gray);
+            margin-bottom: 2px;
+        }
+
+        .margin-val {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--black);
+        }
+
+        .margin-note {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 5px 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .note-ok {
+            background: #DDFFF0;
+            color: #1A6B40;
+        }
+
+        .note-warn {
+            background: #FFE8E6;
+            color: #8B2015;
+        }
+
         /* Edge extension control */
         .edge-extension-control {
             background: var(--cream);
@@ -1858,15 +1931,11 @@
                 const sizeKB = Math.round((dataUrl.length*0.75)/1024);
                 return { filename, originalName, beforeDataUrl: originalDataUrl, beforeSize: `${ow}×${oh}`, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params, scale: 100, padding: 0, quality, edgeExtended: false, type: 'ad-simple', originalImage: img };
             }
-            const scale = (params.scale || 115)/100;
-            const targetPadding = params.padding || DEFAULT_PADDING;
-            const requiredSize = TARGET_SIZE - (targetPadding*2);
-            let finalScale = Math.min(requiredSize/ow, requiredSize/oh);
-            finalScale *= scale;
-            const newW = Math.round(ow*finalScale), newH = Math.round(oh*finalScale);
-            addLog(`  🔄 縮放: ${(finalScale*100).toFixed(1)}%`);
-            addLog(`  📏 留白: ${targetPadding}px`);
-            canvas.width = TARGET_SIZE; canvas.height = TARGET_SIZE;
+
+            // ===== 智慧邊界偵測模式 =====
+            const MIN_PADDING = 138; // MOMO 最低留白要求
+
+            // 1. 偵測背景色（四角平均）
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = ow; tempCanvas.height = oh;
             const tempCtx = tempCanvas.getContext('2d');
@@ -1874,14 +1943,82 @@
             const corners = [tempCtx.getImageData(0,0,1,1),tempCtx.getImageData(ow-1,0,1,1),tempCtx.getImageData(0,oh-1,1,1),tempCtx.getImageData(ow-1,oh-1,1,1)];
             let bgR=0,bgG=0,bgB=0;
             corners.forEach(c=>{bgR+=c.data[0];bgG+=c.data[1];bgB+=c.data[2];});
-            bgR=Math.round(bgR/4);bgG=Math.round(bgG/4);bgB=Math.round(bgB/4);
-            ctx.fillStyle=`rgb(${bgR},${bgG},${bgB})`;
-            ctx.fillRect(0,0,TARGET_SIZE,TARGET_SIZE);
+            bgR=Math.round(bgR/4); bgG=Math.round(bgG/4); bgB=Math.round(bgB/4);
+
+            // 2. 偵測四邊實際內容邊界
+            const bounds = detectContentBounds(tempCanvas, bgR, bgG, bgB);
+            const origPad = {
+                top:    bounds.top,
+                bottom: oh - bounds.bottom,
+                left:   bounds.left,
+                right:  ow - bounds.right
+            };
+            addLog(`  🔍 原始留白 上${origPad.top} 下${origPad.bottom} 左${origPad.left} 右${origPad.right} px`);
+
+            // 3. 內容實際寬高
+            const contentW = bounds.right - bounds.left;
+            const contentH = bounds.bottom - bounds.top;
+
+            // 4. 計算目標尺寸：內容 + 四邊各 MIN_PADDING
+            const neededW = contentW + MIN_PADDING * 2;
+            const neededH = contentH + MIN_PADDING * 2;
+
+            // 5. 決定是否需要縮放（只有 neededW 或 neededH 超過 TARGET_SIZE 才縮）
+            let contentScale = 1;
+            if (neededW > TARGET_SIZE || neededH > TARGET_SIZE) {
+                contentScale = Math.min(
+                    (TARGET_SIZE - MIN_PADDING * 2) / contentW,
+                    (TARGET_SIZE - MIN_PADDING * 2) / contentH
+                );
+                addLog(`  ⚠️ 內容過大，縮放至 ${(contentScale*100).toFixed(1)}%`);
+            } else {
+                addLog(`  ✅ 內容無需縮放，直接延伸留白`);
+            }
+
+            // 6. 計算縮放後的原圖尺寸及貼上位置
+            const scaledOrigW = Math.round(ow * contentScale);
+            const scaledOrigH = Math.round(oh * contentScale);
+
+            // 縮放後各邊留白
+            const scaledPad = {
+                top:    Math.round(origPad.top * contentScale),
+                bottom: Math.round(origPad.bottom * contentScale),
+                left:   Math.round(origPad.left * contentScale),
+                right:  Math.round(origPad.right * contentScale)
+            };
+
+            // 縮放後內容尺寸
+            const scaledContentW = Math.round(contentW * contentScale);
+            const scaledContentH = Math.round(contentH * contentScale);
+
+            // 讓四邊留白至少 MIN_PADDING，計算畫布尺寸及貼上偏移
+            const padTop    = Math.max(MIN_PADDING, scaledPad.top);
+            const padBottom = Math.max(MIN_PADDING, scaledPad.bottom);
+            const padLeft   = Math.max(MIN_PADDING, scaledPad.left);
+            const padRight  = Math.max(MIN_PADDING, scaledPad.right);
+
+            // 最終畫布尺寸（強制 TARGET_SIZE）
+            canvas.width  = TARGET_SIZE;
+            canvas.height = TARGET_SIZE;
+
+            // 計算整張縮放後原圖在畫布上的貼上位置
+            // 讓內容區置中於畫布
+            const totalW = padLeft + scaledContentW + padRight;
+            const totalH = padTop  + scaledContentH + padBottom;
+            const pasteX = Math.floor((TARGET_SIZE - totalW) / 2) + padLeft - scaledPad.left;
+            const pasteY = Math.floor((TARGET_SIZE - totalH) / 2) + padTop  - scaledPad.top;
+
+            // 7. 填背景色
+            ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
+            ctx.fillRect(0, 0, TARGET_SIZE, TARGET_SIZE);
+
+            // 8. 縮放原圖貼上
             const scaledCanvas = document.createElement('canvas');
-            scaledCanvas.width=newW; scaledCanvas.height=newH;
+            scaledCanvas.width = scaledOrigW; scaledCanvas.height = scaledOrigH;
             const scaledCtx = scaledCanvas.getContext('2d');
-            scaledCtx.drawImage(img,0,0,newW,newH);
-            const pasteX=Math.floor((TARGET_SIZE-newW)/2), pasteY=Math.floor((TARGET_SIZE-newH)/2);
+            scaledCtx.drawImage(img, 0, 0, scaledOrigW, scaledOrigH);
+
+            // 9. 背景延伸判斷
             let shouldExtend = false;
             if (params.forceEdgeExtension !== undefined) {
                 shouldExtend = params.forceEdgeExtension;
@@ -1891,12 +2028,22 @@
             } else if (extensionMode === 'noextend') {
                 shouldExtend = false; addLog(`  ⭕ 不延伸模式`);
             } else {
-                const edgeSafety = analyzeEdgeSafety(scaledCanvas,bgR,bgG,bgB);
+                const edgeSafety = analyzeEdgeSafety(scaledCanvas, bgR, bgG, bgB);
                 shouldExtend = edgeSafety.safeToExtend;
                 addLog(`  🧠 智能判斷: ${shouldExtend?'延伸':'不延伸'} (${edgeSafety.safeEdges}/4 邊安全)`);
             }
-            if (shouldExtend) await edgeExtension(ctx,scaledCanvas,newW,newH,pasteX,pasteY);
-            ctx.drawImage(scaledCanvas,pasteX,pasteY);
+            if (shouldExtend) await edgeExtension(ctx, scaledCanvas, scaledOrigW, scaledOrigH, pasteX, pasteY);
+            ctx.drawImage(scaledCanvas, pasteX, pasteY);
+
+            // 10. 計算實際輸出後四邊留白
+            const finalPad = {
+                top:    pasteY + scaledPad.top,
+                bottom: TARGET_SIZE - (pasteY + scaledOrigH - scaledPad.bottom),
+                left:   pasteX + scaledPad.left,
+                right:  TARGET_SIZE - (pasteX + scaledOrigW - scaledPad.right)
+            };
+            addLog(`  ✅ 輸出留白 上${finalPad.top} 下${finalPad.bottom} 左${finalPad.left} 右${finalPad.right} px`);
+
             let quality = params.quality || 90;
             const mime = params.format ? 'image/jpeg' : (params.origMime || 'image/jpeg');
             let afterDataUrl = canvas.toDataURL(mime, quality/100);
@@ -1906,7 +2053,51 @@
                 while (sizeKB > 500 && quality > 50) { quality-=5; afterDataUrl=canvas.toDataURL(mime,quality/100); sizeKB=(afterDataUrl.length*0.75/1024); }
                 addLog(`  ✓ 壓縮完成: ${sizeKB.toFixed(0)}KB (品質 ${quality}%)`);
             }
-            return { originalName, beforeDataUrl: originalDataUrl, afterDataUrl, filename, beforeSize: `${ow}×${oh}`, afterSize: `${sizeKB.toFixed(2)} KB`, scale: `${(finalScale*100).toFixed(1)}%`, padding: `${targetPadding}px`, sizeKB: parseFloat(sizeKB.toFixed(2)), params, originalImage: img, edgeExtended: shouldExtend };
+
+            const scaleDisplay = contentScale < 1 ? `${(contentScale*100).toFixed(1)}%` : '不縮放';
+            return {
+                originalName, beforeDataUrl: originalDataUrl, afterDataUrl, filename,
+                beforeSize: `${ow}×${oh}`,
+                afterSize: `${sizeKB.toFixed(2)} KB`,
+                scale: scaleDisplay,
+                padding: `${Math.min(finalPad.top, finalPad.bottom, finalPad.left, finalPad.right)}px`,
+                origPad, finalPad, contentScale,
+                sizeKB: parseFloat(sizeKB.toFixed(2)),
+                params, originalImage: img, edgeExtended: shouldExtend
+            };
+        }
+
+        // 偵測內容邊界（回傳 top/bottom/left/right 的像素位置）
+        function detectContentBounds(canvas, bgR, bgG, bgB) {
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const data = ctx.getImageData(0, 0, w, h).data;
+            const threshold = 30;
+
+            function isDiff(x, y) {
+                const i = (y * w + x) * 4;
+                return Math.sqrt(
+                    Math.pow(data[i]-bgR,2) +
+                    Math.pow(data[i+1]-bgG,2) +
+                    Math.pow(data[i+2]-bgB,2)
+                ) > threshold;
+            }
+
+            let top = 0, bottom = h-1, left = 0, right = w-1;
+
+            outer: for (let y=0; y<h; y++) {
+                for (let x=0; x<w; x++) { if (isDiff(x,y)) { top=y; break outer; } }
+            }
+            outer: for (let y=h-1; y>=0; y--) {
+                for (let x=0; x<w; x++) { if (isDiff(x,y)) { bottom=y; break outer; } }
+            }
+            outer: for (let x=0; x<w; x++) {
+                for (let y=0; y<h; y++) { if (isDiff(x,y)) { left=x; break outer; } }
+            }
+            outer: for (let x=w-1; x>=0; x--) {
+                for (let y=0; y<h; y++) { if (isDiff(x,y)) { right=x; break outer; } }
+            }
+            return { top, bottom, left, right };
         }
 
         function analyzeEdgeSafety(canvas,bgR,bgG,bgB) {
@@ -2002,8 +2193,45 @@
 
             if (!isPromo) {
                 html += `
-                        <div class="summary-item"><div class="summary-label">縮放</div><div class="summary-value">${result.scale||'100%'}</div></div>
-                        <div class="summary-item"><div class="summary-label">留白</div><div class="summary-value">${result.padding||'0px'}</div></div>`;
+                        <div class="summary-item"><div class="summary-label">縮放</div><div class="summary-value">${result.scale||'不縮放'}</div></div>
+                        <div class="summary-item"><div class="summary-label">最窄留白</div><div class="summary-value">${result.padding||'0px'}</div></div>`;
+
+                // 四邊留白詳細顯示
+                if (result.finalPad) {
+                    const fp = result.finalPad;
+                    const minPad = Math.min(fp.top, fp.bottom, fp.left, fp.right);
+                    const REQUIRED = 138;
+                    html += `
+                    </div></div>
+                    <div class="margin-detail">
+                        <div class="margin-detail-title">四邊留白</div>
+                        <div class="margin-grid">
+                            <div class="margin-item ${fp.top >= REQUIRED ? 'ok' : 'warn'}">
+                                <div class="margin-dir">上</div>
+                                <div class="margin-val">${fp.top}px</div>
+                            </div>
+                            <div class="margin-item ${fp.bottom >= REQUIRED ? 'ok' : 'warn'}">
+                                <div class="margin-dir">下</div>
+                                <div class="margin-val">${fp.bottom}px</div>
+                            </div>
+                            <div class="margin-item ${fp.left >= REQUIRED ? 'ok' : 'warn'}">
+                                <div class="margin-dir">左</div>
+                                <div class="margin-val">${fp.left}px</div>
+                            </div>
+                            <div class="margin-item ${fp.right >= REQUIRED ? 'ok' : 'warn'}">
+                                <div class="margin-dir">右</div>
+                                <div class="margin-val">${fp.right}px</div>
+                            </div>
+                        </div>
+                        <div class="margin-note ${minPad >= REQUIRED ? 'note-ok' : 'note-warn'}">
+                            ${minPad >= REQUIRED
+                                ? `✅ 四邊均達 138px 規格${result.contentScale < 1 ? `，縮放 ${(result.contentScale*100).toFixed(1)}%` : '，內容未縮放'}`
+                                : `⚠️ 最窄邊僅 ${minPad}px，未達 138px`
+                            }
+                        </div>
+                    </div>
+                    <div class="result-summary" style="display:none"><div class="summary-grid">`;
+                }
             }
             html += `
                         <div class="summary-item"><div class="summary-label">大小</div><div class="summary-value">${result.afterSize}</div></div>
