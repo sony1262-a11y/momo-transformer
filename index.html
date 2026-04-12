@@ -1964,70 +1964,69 @@
                 return { filename, originalName, beforeDataUrl: originalDataUrl, beforeSize: `${ow}×${oh}`, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params, scale: 100, padding: 0, quality, edgeExtended: false, type: 'ad-simple', originalImage: img };
             }
 
-            // ===== 智慧邊界偵測模式 =====
+            // ===== 智慧縮放模式 =====
+            // 原則：把整張原圖縮放後置中於 1000×1000 畫布
+            // 縮放比 S 由「讓縮放後的圖放進畫布，且四周各有 MIN_PADDING」決定
+            // 即：ow*S <= 1000，oh*S <= 1000，且 (1000-ow*S)/2 >= MIN_PADDING
+            // → ow*S <= 1000 - 2*MIN_PADDING
+            // → S <= (1000 - 2*MIN_PADDING) / ow
             const MIN_PADDING = params.manualMinPadding || 138;
-            const extraScale = (params.scale || 100) / 100;
+            const extraScale  = (params.scale || 100) / 100;
 
-            // 1. 偵測背景色（四角 5×5 平均，比單點更穩定）
+            // 1. 背景色（四角平均）
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = ow; tempCanvas.height = oh;
             const tempCtx = tempCanvas.getContext('2d');
             tempCtx.drawImage(img, 0, 0);
-            const bgColor = sampleBgColor(tempCtx, ow, oh);
-            let bgR = bgColor.r, bgG = bgColor.g, bgB = bgColor.b;
+            const corners = [
+                tempCtx.getImageData(0,0,1,1),
+                tempCtx.getImageData(ow-1,0,1,1),
+                tempCtx.getImageData(0,oh-1,1,1),
+                tempCtx.getImageData(ow-1,oh-1,1,1)
+            ];
+            let bgR=0, bgG=0, bgB=0;
+            corners.forEach(c=>{ bgR+=c.data[0]; bgG+=c.data[1]; bgB+=c.data[2]; });
+            bgR=Math.round(bgR/4); bgG=Math.round(bgG/4); bgB=Math.round(bgB/4);
 
-            // 2. 偵測四邊實際留白
-            const bounds = detectContentBounds(tempCanvas, bgR, bgG, bgB);
-            const origPad = {
-                top:    bounds.top,
-                bottom: oh - bounds.bottom - 1,
-                left:   bounds.left,
-                right:  ow - bounds.right - 1
-            };
-            // 內容實際尺寸（從邊界到邊界）
-            const contentW = bounds.right - bounds.left + 1;
-            const contentH = bounds.bottom - bounds.top + 1;
-            addLog(`  🔍 原始留白 上${origPad.top} 下${origPad.bottom} 左${origPad.left} 右${origPad.right} px`);
-            addLog(`  📦 內容 ${contentW}×${contentH}`);
-
-            // 3. 計算縮放比（以內容為基準，確保四邊 >= MIN_PADDING）
-            // contentW * S + 2*MIN_PADDING <= TARGET_SIZE
-            // S <= (TARGET_SIZE - 2*MIN_PADDING) / contentW
-            const maxScaleW = (TARGET_SIZE - 2 * MIN_PADDING) / contentW;
-            const maxScaleH = (TARGET_SIZE - 2 * MIN_PADDING) / contentH;
-            const autoScale = Math.min(maxScaleW, maxScaleH, 1.0);
+            // 2. 縮放比：讓整張原圖縮進 (TARGET - 2*MIN_PADDING) 的框內
+            const autoScale = Math.min(
+                (TARGET_SIZE - 2 * MIN_PADDING) / ow,
+                (TARGET_SIZE - 2 * MIN_PADDING) / oh,
+                1.0  // 不放大
+            );
             const contentScale = Math.min(Math.max(autoScale * extraScale, 0.05), 1.0);
             addLog(`  📐 縮放: ${(contentScale*100).toFixed(1)}%`);
 
-            // 4. 縮放後內容尺寸
-            const scaledContentW = Math.round(contentW * contentScale);
-            const scaledContentH = Math.round(contentH * contentScale);
-
-            // 5. 內容置中，並強制 >= MIN_PADDING
-            const contentX = Math.max(MIN_PADDING, Math.floor((TARGET_SIZE - scaledContentW) / 2));
-            const contentY = Math.max(MIN_PADDING, Math.floor((TARGET_SIZE - scaledContentH) / 2));
-
-            // 6. 整張縮放後原圖的貼上座標
+            // 3. 縮放後原圖尺寸
             const scaledOrigW = Math.round(ow * contentScale);
             const scaledOrigH = Math.round(oh * contentScale);
-            const pasteX = contentX - Math.round(bounds.left * contentScale);
-            const pasteY = contentY - Math.round(bounds.top  * contentScale);
 
-            // 最終畫布
+            // 4. 置中於畫布
+            const pasteX = Math.floor((TARGET_SIZE - scaledOrigW) / 2);
+            const pasteY = Math.floor((TARGET_SIZE - scaledOrigH) / 2);
+
+            // 5. 四邊留白（精確數學計算，不依賴邊界偵測）
+            const finalPad = {
+                top:    pasteY,
+                bottom: TARGET_SIZE - pasteY - scaledOrigH,
+                left:   pasteX,
+                right:  TARGET_SIZE - pasteX - scaledOrigW
+            };
+            addLog(`  ✅ 輸出留白 上${finalPad.top} 下${finalPad.bottom} 左${finalPad.left} 右${finalPad.right} px`);
+
+            // 6. 畫布
             canvas.width  = TARGET_SIZE;
             canvas.height = TARGET_SIZE;
-
-            // 7. 填背景色
             ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
             ctx.fillRect(0, 0, TARGET_SIZE, TARGET_SIZE);
 
-            // 8. 縮放原圖貼上
+            // 7. 縮放原圖貼上
             const scaledCanvas = document.createElement('canvas');
             scaledCanvas.width = scaledOrigW; scaledCanvas.height = scaledOrigH;
             const scaledCtx = scaledCanvas.getContext('2d');
             scaledCtx.drawImage(img, 0, 0, scaledOrigW, scaledOrigH);
 
-            // 9. 背景延伸判斷
+            // 8. 背景延伸判斷
             let shouldExtend = false;
             if (params.forceEdgeExtension !== undefined) {
                 shouldExtend = params.forceEdgeExtension;
@@ -2043,15 +2042,6 @@
             }
             if (shouldExtend) await edgeExtension(ctx, scaledCanvas, scaledOrigW, scaledOrigH, pasteX, pasteY);
             ctx.drawImage(scaledCanvas, pasteX, pasteY);
-
-            // 10. 實際輸出四邊留白（從內容邊緣到畫布邊緣）
-            const finalPad = {
-                top:    contentY,
-                bottom: TARGET_SIZE - (contentY + scaledContentH),
-                left:   contentX,
-                right:  TARGET_SIZE - (contentX + scaledContentW)
-            };
-            addLog(`  ✅ 輸出留白 上${finalPad.top} 下${finalPad.bottom} 左${finalPad.left} 右${finalPad.right} px`);
 
             let quality = params.quality || 90;
             const mime = params.format ? 'image/jpeg' : (params.origMime || 'image/jpeg');
@@ -2070,7 +2060,7 @@
                 afterSize: `${sizeKB.toFixed(2)} KB`,
                 scale: scaleDisplay,
                 padding: `${Math.min(finalPad.top, finalPad.bottom, finalPad.left, finalPad.right)}px`,
-                origPad, finalPad, contentScale,
+                finalPad, contentScale,
                 sizeKB: parseFloat(sizeKB.toFixed(2)),
                 params, originalImage: img, edgeExtended: shouldExtend
             };
