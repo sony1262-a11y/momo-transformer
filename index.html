@@ -1079,6 +1079,7 @@
             justify-content: center;
             overflow: hidden;
             box-shadow: 4px 4px 0 var(--black);
+            position: relative;
         }
 
         .editor-preview img {
@@ -1086,6 +1087,32 @@
             max-height: 100%;
             object-fit: contain;
         }
+
+        /* 四邊留白標尺 */
+        .margin-ruler {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .margin-ruler span {
+            background: rgba(26,26,26,0.82);
+            color: var(--yellow);
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            white-space: nowrap;
+        }
+
+        .margin-ruler-top    { top: 6px;   left: 0; right: 0; }
+        .margin-ruler-bottom { bottom: 6px; left: 0; right: 0; }
+        .margin-ruler-left   { left: 6px;  top: 0; bottom: 0; flex-direction: column; }
+        .margin-ruler-right  { right: 6px; top: 0; bottom: 0; flex-direction: column; }
 
         .editor-controls { display: flex; flex-direction: column; gap: 14px; }
 
@@ -1637,8 +1664,13 @@
                 <div class="editor-title">手動微調</div>
                 <button class="editor-close" onclick="closeEditor()">×</button>
             </div>
-            <div class="editor-preview">
+            <div class="editor-preview" id="editorPreview">
                 <img id="editorImage" src="" alt="Preview">
+                <!-- 四邊留白標示 -->
+                <div class="margin-ruler margin-ruler-top" id="rulerTop"><span id="rulerTopVal">—</span></div>
+                <div class="margin-ruler margin-ruler-bottom" id="rulerBottom"><span id="rulerBottomVal">—</span></div>
+                <div class="margin-ruler margin-ruler-left" id="rulerLeft"><span id="rulerLeftVal">—</span></div>
+                <div class="margin-ruler margin-ruler-right" id="rulerRight"><span id="rulerRightVal">—</span></div>
             </div>
             <div class="editor-controls">
                 <div class="control-group">
@@ -1650,7 +1682,7 @@
                         </div>
                     </div>
                     <input type="range" id="scaleRange" min="70" max="200" value="100" step="5" oninput="updateParamAndPreview('scale',this.value)">
-                    <div class="control-desc">調整內容大小（70–200%，步進 5%）</div>
+                    <div class="control-desc">調整內容大小（70–200%，每次增減 5%）</div>
                 </div>
                 <div class="control-group">
                     <div class="control-label">
@@ -1991,22 +2023,26 @@
             const scaledContentW = Math.round(contentW * contentScale);
             const scaledContentH = Math.round(contentH * contentScale);
 
-            // 讓四邊留白至少 MIN_PADDING，計算畫布尺寸及貼上偏移
-            const padTop    = Math.max(MIN_PADDING, scaledPad.top);
-            const padBottom = Math.max(MIN_PADDING, scaledPad.bottom);
-            const padLeft   = Math.max(MIN_PADDING, scaledPad.left);
-            const padRight  = Math.max(MIN_PADDING, scaledPad.right);
+            // 四邊統一補 MIN_PADDING（從內容邊緣算起，不保留原有多餘留白）
+            // 這樣產品始終最大化，留白剛好達標
+            const padTop    = MIN_PADDING;
+            const padBottom = MIN_PADDING;
+            const padLeft   = MIN_PADDING;
+            const padRight  = MIN_PADDING;
 
             // 最終畫布尺寸（強制 TARGET_SIZE）
             canvas.width  = TARGET_SIZE;
             canvas.height = TARGET_SIZE;
 
-            // 計算整張縮放後原圖在畫布上的貼上位置
-            // 讓內容區置中於畫布
+            // 內容置中，四邊各 138px
             const totalW = padLeft + scaledContentW + padRight;
             const totalH = padTop  + scaledContentH + padBottom;
-            const pasteX = Math.floor((TARGET_SIZE - totalW) / 2) + padLeft - scaledPad.left;
-            const pasteY = Math.floor((TARGET_SIZE - totalH) / 2) + padTop  - scaledPad.top;
+            // pasteX/Y 是縮放後「整張原圖」的左上角位置
+            // 內容在原圖中的偏移是 scaledPad.left / scaledPad.top
+            const contentStartX = Math.floor((TARGET_SIZE - totalW) / 2) + padLeft;
+            const contentStartY = Math.floor((TARGET_SIZE - totalH) / 2) + padTop;
+            const pasteX = contentStartX - Math.round(bounds.left * contentScale);
+            const pasteY = contentStartY - Math.round(bounds.top  * contentScale);
 
             // 7. 填背景色
             ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
@@ -2035,12 +2071,12 @@
             if (shouldExtend) await edgeExtension(ctx, scaledCanvas, scaledOrigW, scaledOrigH, pasteX, pasteY);
             ctx.drawImage(scaledCanvas, pasteX, pasteY);
 
-            // 10. 計算實際輸出後四邊留白
+            // 10. 實際輸出四邊留白（從內容邊緣到畫布邊緣）
             const finalPad = {
-                top:    pasteY + scaledPad.top,
-                bottom: TARGET_SIZE - (pasteY + scaledOrigH - scaledPad.bottom),
-                left:   pasteX + scaledPad.left,
-                right:  TARGET_SIZE - (pasteX + scaledOrigW - scaledPad.right)
+                top:    contentStartY,
+                bottom: TARGET_SIZE - (contentStartY + scaledContentH),
+                left:   contentStartX,
+                right:  TARGET_SIZE - (contentStartX + scaledContentW)
             };
             addLog(`  ✅ 輸出留白 上${finalPad.top} 下${finalPad.bottom} 左${finalPad.left} 右${finalPad.right} px`);
 
@@ -2394,6 +2430,20 @@
             document.getElementById('qualityInput').value = quality;
             updateParam('scale',scale); updateParam('padding',padding); updateParam('quality',quality);
             currentPreviewResult = {...result, params:{scale,padding,quality,forceEdgeExtension:result.params.forceEdgeExtension}};
+            // 初始化標尺
+            if (result.finalPad) updateRulers(result.finalPad);
+        }
+
+        function updateRulers(finalPad) {
+            if (!finalPad) return;
+            const REQUIRED = 138;
+            ['top','bottom','left','right'].forEach(side => {
+                const el = document.getElementById('ruler' + side.charAt(0).toUpperCase() + side.slice(1) + 'Val');
+                if (!el) return;
+                const val = finalPad[side];
+                el.textContent = val + 'px';
+                el.style.background = val >= REQUIRED ? 'rgba(26,139,64,0.85)' : 'rgba(217,79,61,0.9)';
+            });
         }
 
         function closeEditor() { editorOverlay.classList.remove('active'); currentEditingImage=null; currentEditingOriginalImage=null; currentEditingIndex=null; currentPreviewResult=null; }
@@ -2436,6 +2486,7 @@
                         editorImage.style.transform=''; editorImage.style.transition='';
                         editorImage.src = result.afterDataUrl;
                         currentPreviewResult = result;
+                        if (result.finalPad) updateRulers(result.finalPad);
                     } catch(e) { console.error(e); }
                     isUpdating = false;
                 });
