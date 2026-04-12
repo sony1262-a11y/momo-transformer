@@ -1992,63 +1992,52 @@
             const contentW = bounds.right - bounds.left;
             const contentH = bounds.bottom - bounds.top;
 
-            // 4. 計算各邊缺口：只有不足 MIN_PADDING 的邊才需要縮放
-            //    縮放比計算：讓不足的邊縮到剛好達標
-            //    若某邊原有留白為 P，縮放比為 S，縮後留白 = P*S + (1-S)*邊寬/2... 不對
-            //    正確：縮放整張圖後，內容變小，留白 = (1000 - contentW*S) / 2 (置中情況)
-            //    但這裡不是置中，是貼著某邊縮。
+            // 4. 找出最需要縮放的邊，計算所需縮放比
+            //    原則：縮放後整圖貼在畫布上，pasteX/Y 調整讓各邊留白 >= MIN_PADDING
+            //    縮放比 S：使得縮放後原圖可以在 1000×1000 畫布內，讓所有邊留白 >= MIN_PADDING
             //
-            //    更簡單的思路：
-            //    縮放比 S 讓最不足的邊剛好 = MIN_PADDING
-            //    不足的邊：原始留白 < MIN_PADDING
-            //    需要的縮放：讓 origPad[side] 在縮放後仍保留，同時畫布內剩餘空間補足 MIN_PADDING
+            //    縮放後留白 = origPad[side] * S
+            //    若 origPad[side] * S < MIN_PADDING → 需要縮放整圖讓內容收縮，
+            //    同時畫布背景色延伸補足缺口
             //
-            //    實際上，縮放 S 後：
-            //      縮放後整圖尺寸 = ow*S × oh*S
-            //      各邊留白 = origPad[side] * S
-            //      但畫布是 1000×1000，縮放後圖貼在畫布上，多出的空間是背景色延伸
-            //
-            //    所以：縮放後某邊留白 = origPad[side] * S
-            //    要讓最窄邊 >= MIN_PADDING：
-            //      S >= MIN_PADDING / min(origPad)
-            //    但 S <= 1（不放大）
-            //    同時縮放後整圖不能超出畫布：ow*S <= 1000 且 oh*S <= 1000
+            //    但若 origPad = 0（貼邊），縮放本身不能製造留白
+            //    → 解法：把整圖縮小 S，讓 contentW * S + 2 * MIN_PADDING <= 1000
+            //    → S = (1000 - 2 * MIN_PADDING) / contentW (或 contentH)
+            //    → 這是最保守（最小）的 S，確保內容放進去後四周都有空間補背景
 
-            // 找各邊需要的最小縮放比
-            let requiredScale = 1.0; // 預設不縮放
-            const sides = ['top','bottom','left','right'];
-            sides.forEach(side => {
-                if (origPad[side] < MIN_PADDING && origPad[side] >= 0) {
-                    // 這邊不足，需要縮放讓它達標
-                    // 縮放後此邊留白 = origPad[side] * S >= MIN_PADDING
-                    // → S >= MIN_PADDING / origPad[side]（若 origPad=0 則需特殊處理）
-                    if (origPad[side] === 0) {
-                        // 完全貼邊，縮放本身無法製造留白，需要靠縮整圖讓邊緣退縮
-                        // 縮放後整圖貼畫布：留白 = (1000 - ow*S)/2 （若置中）
-                        // 但我們不置中，所以用內容邏輯：縮放後內容寬 = contentW*S，畫布 1000px，兩側留白各 (1000-contentW*S)/2
-                        // 要 >= MIN_PADDING：S <= (1000 - 2*MIN_PADDING) / contentW
-                        const sNeeded = (TARGET_SIZE - 2 * MIN_PADDING) / (side === 'left' || side === 'right' ? contentW : contentH);
-                        requiredScale = Math.min(requiredScale, sNeeded);
-                    } else {
-                        const sNeeded = MIN_PADDING / origPad[side];
-                        if (sNeeded < 1) requiredScale = Math.min(requiredScale, sNeeded);
-                        else {
-                            // origPad < MIN_PADDING 且 sNeeded >= 1，代表需要放大才能達標，但放大不合理
-                            // 改用內容置中邏輯
-                            const sNeeded2 = (TARGET_SIZE - 2 * MIN_PADDING) / (side === 'left' || side === 'right' ? contentW : contentH);
-                            requiredScale = Math.min(requiredScale, sNeeded2);
-                        }
-                    }
-                }
-            });
+            // 先算「內容剛好塞進畫布且四周各有 MIN_PADDING」所需的最大縮放比
+            const maxScaleByContent = Math.min(
+                (TARGET_SIZE - 2 * MIN_PADDING) / contentW,
+                (TARGET_SIZE - 2 * MIN_PADDING) / contentH
+            );
 
-            // 同時確保縮放後整圖不超出畫布
-            requiredScale = Math.min(requiredScale, TARGET_SIZE / ow, TARGET_SIZE / oh);
+            // 再算「原圖不超出畫布」的最大縮放比
+            const maxScaleByCanvas = Math.min(TARGET_SIZE / ow, TARGET_SIZE / oh);
 
-            // 套用使用者額外縮放（extraScale < 1 = 更小，> 1 = 更大但不超過不縮放的上限）
-            const contentScale = Math.min(requiredScale * extraScale, TARGET_SIZE / ow, TARGET_SIZE / oh);
+            // 基礎縮放比：只有當最窄邊不足時才縮，否則不縮（S=1）
+            const minOrigPad = Math.min(origPad.top, origPad.bottom, origPad.left, origPad.right);
+            let baseScale;
+            if (minOrigPad >= MIN_PADDING) {
+                // 所有邊都已足夠，不需縮放
+                baseScale = 1.0;
+            } else if (minOrigPad === 0) {
+                // 有邊完全貼邊，必須縮放讓內容縮小騰出空間
+                baseScale = maxScaleByContent;
+            } else {
+                // 最窄邊不足但 > 0，縮放讓最窄邊剛好達標
+                // 縮放 S 後最窄邊留白 = minOrigPad * S
+                // 但我們不是要求最窄邊 = MIN_PADDING，而是讓縮後內容+兩側留白 <= 1000
+                // 使用 maxScaleByContent 確保絕對安全
+                baseScale = maxScaleByContent;
+            }
 
-            addLog(`  📐 縮放比: ${(contentScale*100).toFixed(1)}% (自動=${(requiredScale*100).toFixed(1)}%)`);
+            // 套用使用者額外縮放，但不能超過畫布限制
+            const contentScale = Math.min(
+                Math.max(baseScale * extraScale, 0.1),
+                maxScaleByCanvas
+            );
+
+            addLog(`  📐 縮放比: ${(contentScale*100).toFixed(1)}% (基礎=${(baseScale*100).toFixed(1)}%)`);
 
             // 5. 計算縮放後尺寸
             const scaledOrigW = Math.round(ow * contentScale);
@@ -2062,15 +2051,14 @@
             const scaledContentW = Math.round(contentW * contentScale);
             const scaledContentH = Math.round(contentH * contentScale);
 
-            // 6. 計算貼上位置：讓各邊留白剛好達到 MIN_PADDING（不足的補背景色，多的保留）
-            //    先算內容應該放在哪裡（內容左上角在畫布上的位置）
-            //    水平：若左邊縮後留白 >= MIN_PADDING，內容維持原位；若不足，把內容推到左邊 MIN_PADDING 處
-            const contentX = Math.max(MIN_PADDING, scaledPad.left);
-            const contentY = Math.max(MIN_PADDING, scaledPad.top);
-
-            // 整張縮放後原圖的貼上位置
-            const pasteX = contentX - scaledPad.left;
-            const pasteY = contentY - scaledPad.top;
+            // 6. 計算貼上位置
+            //    各邊最終留白 = scaledPad[side] + 背景延伸量
+            //    背景延伸量 = max(0, MIN_PADDING - scaledPad[side])
+            //    貼上位置：讓左邊和上邊各有 MIN_PADDING（不足的補背景，多的保留）
+            //    若 scaledPad.left >= MIN_PADDING → pasteX = 0（維持原位，左邊留白本來就夠）
+            //    若 scaledPad.left < MIN_PADDING  → pasteX = MIN_PADDING - scaledPad.left（往右推）
+            const pasteX = Math.max(0, MIN_PADDING - scaledPad.left);
+            const pasteY = Math.max(0, MIN_PADDING - scaledPad.top);
 
             // 最終畫布
             canvas.width  = TARGET_SIZE;
