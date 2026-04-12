@@ -1689,11 +1689,11 @@
                         <span>留白距離</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="paddingValue">90px</span>
-                            <input type="number" class="control-input" id="paddingInput" min="70" max="200" value="90" onchange="updateFromInput('padding',this.value)">
+                            <input type="number" class="control-input" id="paddingInput" min="138" max="300" value="138" onchange="updateFromInput('padding',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="paddingRange" min="70" max="200" value="90" step="5" oninput="updateParamAndPreview('padding',this.value)">
-                    <div class="control-desc">手動調整四周留白空間（70–200px）</div>
+                    <input type="range" id="paddingRange" min="138" max="300" value="138" step="5" oninput="updateParamAndPreview('padding',this.value)">
+                    <div class="control-desc">最小留白（預設 138px，調高產品更小但更安全）</div>
                 </div>
                 <div class="control-group">
                     <div class="control-label">
@@ -1965,7 +1965,8 @@
             }
 
             // ===== 智慧邊界偵測模式 =====
-            const MIN_PADDING = 138; // MOMO 最低留白要求
+            const MIN_PADDING = params.manualMinPadding || 138; // 使用者可覆蓋，預設 138px
+            const extraScale = (params.scale || 100) / 100;     // 使用者額外縮放倍率（預設 1.0 = 不額外縮）
 
             // 1. 偵測背景色（四角平均）
             const tempCanvas = document.createElement('canvas');
@@ -1996,15 +1997,17 @@
             const neededH = contentH + MIN_PADDING * 2;
 
             // 5. 決定是否需要縮放（只有 neededW 或 neededH 超過 TARGET_SIZE 才縮）
-            let contentScale = 1;
-            if (neededW > TARGET_SIZE || neededH > TARGET_SIZE) {
+            let contentScale = extraScale; // 先套使用者額外縮放
+            const neededW2 = contentW * extraScale + MIN_PADDING * 2;
+            const neededH2 = contentH * extraScale + MIN_PADDING * 2;
+            if (neededW2 > TARGET_SIZE || neededH2 > TARGET_SIZE) {
                 contentScale = Math.min(
                     (TARGET_SIZE - MIN_PADDING * 2) / contentW,
                     (TARGET_SIZE - MIN_PADDING * 2) / contentH
                 );
                 addLog(`  ⚠️ 內容過大，縮放至 ${(contentScale*100).toFixed(1)}%`);
             } else {
-                addLog(`  ✅ 內容無需縮放，直接延伸留白`);
+                addLog(`  ✅ 縮放: ${(contentScale*100).toFixed(1)}%，留白: ${MIN_PADDING}px`);
             }
 
             // 6. 計算縮放後的原圖尺寸及貼上位置
@@ -2421,7 +2424,7 @@
             currentEditingIndex = index;
             editorImage.src = result.afterDataUrl;
             editorOverlay.classList.add('active');
-            const scale = result.params.scale||100, padding = result.params.padding||DEFAULT_PADDING, quality = result.params.quality||90;
+            const scale = result.params.scale||100, padding = result.params.manualMinPadding||138, quality = result.params.quality||90;
             document.getElementById('scaleRange').value = scale;
             document.getElementById('scaleInput').value = scale;
             document.getElementById('paddingRange').value = padding;
@@ -2429,8 +2432,7 @@
             document.getElementById('qualityRange').value = quality;
             document.getElementById('qualityInput').value = quality;
             updateParam('scale',scale); updateParam('padding',padding); updateParam('quality',quality);
-            currentPreviewResult = {...result, params:{scale,padding,quality,forceEdgeExtension:result.params.forceEdgeExtension}};
-            // 初始化標尺
+            currentPreviewResult = {...result, params:{...result.params, scale, manualMinPadding: padding, quality}};
             if (result.finalPad) updateRulers(result.finalPad);
         }
 
@@ -2482,7 +2484,22 @@
                     const padding=parseInt(document.getElementById('paddingRange').value);
                     const quality=parseInt(document.getElementById('qualityRange').value);
                     try {
-                        const result = await transformImage(currentEditingOriginalImage, currentPreviewResult.filename, currentPreviewResult.beforeDataUrl, currentPreviewResult.originalName, {scale,padding,quality,forceEdgeExtension:currentPreviewResult.params.forceEdgeExtension});
+                        const baseParams = currentPreviewResult.params || {};
+                        const result = await transformImage(
+                            currentEditingOriginalImage,
+                            currentPreviewResult.filename,
+                            currentPreviewResult.beforeDataUrl,
+                            currentPreviewResult.originalName,
+                            {
+                                scale, quality,
+                                content: baseParams.content !== false,
+                                compress: baseParams.compress,
+                                format: baseParams.format,
+                                origMime: baseParams.origMime,
+                                forceEdgeExtension: currentPreviewResult.params?.forceEdgeExtension,
+                                manualMinPadding: padding  // 使用者指定的最小留白（覆蓋預設 138px）
+                            }
+                        );
                         editorImage.style.transform=''; editorImage.style.transition='';
                         editorImage.src = result.afterDataUrl;
                         currentPreviewResult = result;
