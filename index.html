@@ -1733,15 +1733,19 @@
                     const img = new Image();
                     img.onload = async () => {
                         try {
+                            // 偵測原始格式
+                            const origMime = file.type || (file.name.match(/\.png$/i) ? 'image/png' :
+                                             file.name.match(/\.gif$/i) ? 'image/gif' :
+                                             file.name.match(/\.webp$/i) ? 'image/webp' : 'image/jpeg');
                             const sanitizedName = taskFilename ? sanitizeFilename(file.name, taskFormat) : (taskFormat ? forceJpgExt(file.name) : file.name);
                             if (taskFilename) addLog(`  ✓ 檔名: ${sanitizedName}`);
                             let result;
                             if (isPromo) {
-                                result = await processPromoImage(img, sanitizedName, e.target.result, file.name, { resize: taskResize, compress: taskCompress, format: taskFormat });
+                                result = await processPromoImage(img, sanitizedName, e.target.result, file.name, { resize: taskResize, compress: taskCompress, format: taskFormat, origMime });
                             } else {
                                 result = await transformImage(img, sanitizedName, e.target.result, file.name, {
                                     scale: 115, padding: DEFAULT_PADDING, quality: 90,
-                                    resize: taskResize, content: taskContent, compress: taskCompress, format: taskFormat
+                                    resize: taskResize, content: taskContent, compress: taskCompress, format: taskFormat, origMime
                                 });
                             }
                             if (result.params) {
@@ -1820,13 +1824,13 @@
                 ctx.drawImage(img, 0, 0);
             }
             if (options.compress) {
-                const mime = options.format ? 'image/jpeg' : 'image/png';
+                const mime = options.format ? 'image/jpeg' : (options.origMime || 'image/jpeg');
                 let dataUrl = canvas.toDataURL(mime, quality/100);
                 let sizeKB = Math.round((dataUrl.length*0.75)/1024);
                 while (sizeKB > 500 && quality > 50) { quality -= 5; dataUrl = canvas.toDataURL(mime, quality/100); sizeKB = Math.round((dataUrl.length*0.75)/1024); }
                 return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params: {quality}, scale: 100, padding: 0, quality, edgeExtended: false, type: 'promo' };
             } else {
-                const mime = options.format ? 'image/jpeg' : 'image/png';
+                const mime = options.format ? 'image/jpeg' : (options.origMime || 'image/jpeg');
                 const dataUrl = canvas.toDataURL(mime, quality/100);
                 const sizeKB = Math.round((dataUrl.length*0.75)/1024);
                 return { filename, originalName, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params: {quality}, scale: 100, padding: 0, quality, edgeExtended: false, type: 'promo' };
@@ -1849,7 +1853,7 @@
                     ctx.drawImage(img, 0, 0);
                 }
                 const quality = params.quality || 90;
-                const mime = params.format !== false ? 'image/jpeg' : 'image/png';
+                const mime = params.format ? 'image/jpeg' : (params.origMime || 'image/jpeg');
                 const dataUrl = canvas.toDataURL(mime, quality/100);
                 const sizeKB = Math.round((dataUrl.length*0.75)/1024);
                 return { filename, originalName, beforeDataUrl: originalDataUrl, beforeSize: `${ow}×${oh}`, afterDataUrl: dataUrl, afterSize: sizeKB+' KB', params, scale: 100, padding: 0, quality, edgeExtended: false, type: 'ad-simple', originalImage: img };
@@ -1894,7 +1898,7 @@
             if (shouldExtend) await edgeExtension(ctx,scaledCanvas,newW,newH,pasteX,pasteY);
             ctx.drawImage(scaledCanvas,pasteX,pasteY);
             let quality = params.quality || 90;
-            const mime = params.format !== false ? 'image/jpeg' : 'image/png';
+            const mime = params.format ? 'image/jpeg' : (params.origMime || 'image/jpeg');
             let afterDataUrl = canvas.toDataURL(mime, quality/100);
             let sizeKB = (afterDataUrl.length*0.75/1024);
             if (params.compress && sizeKB > 500) {
@@ -2054,9 +2058,11 @@
         function downloadOne(index) {
             const result = processedResults[index];
             if (!result) return;
-            const newFilename = prompt('📝 編輯檔案名稱（不含副檔名）：', result.filename.replace('.jpg',''));
+            const ext = result.afterDataUrl.startsWith('data:image/png') ? 'png' : 'jpg';
+            const baseName = result.filename.replace(/\.[^/.]+$/, '');
+            const newFilename = prompt('📝 編輯檔案名稱（不含副檔名）：', baseName);
             if (newFilename === null) return;
-            const finalFilename = (newFilename&&newFilename.trim()) ? newFilename.trim()+'.jpg' : result.filename;
+            const finalFilename = (newFilename&&newFilename.trim()) ? newFilename.trim()+'.'+ext : result.filename;
             fetch(result.afterDataUrl).then(r=>r.blob()).then(blob=>{
                 const blobUrl = URL.createObjectURL(blob);
                 const link = document.createElement('a');
@@ -2074,9 +2080,11 @@
                 if (result) {
                     setTimeout(()=>{
                         fetch(result.afterDataUrl).then(r=>r.blob()).then(blob=>{
+                            const ext = result.afterDataUrl.startsWith('data:image/png') ? 'png' : 'jpg';
+                            const filename = result.filename.replace(/\.[^/.]+$/, '') + '.' + ext;
                             const blobUrl=URL.createObjectURL(blob);
                             const link=document.createElement('a');
-                            link.href=blobUrl; link.download=result.filename;
+                            link.href=blobUrl; link.download=filename;
                             document.body.appendChild(link); link.click(); document.body.removeChild(link);
                             setTimeout(()=>URL.revokeObjectURL(blobUrl),100);
                         });
