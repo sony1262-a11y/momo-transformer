@@ -1689,11 +1689,11 @@
                         <span>留白距離</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="paddingValue">90px</span>
-                            <input type="number" class="control-input" id="paddingInput" min="138" max="300" value="138" onchange="updateFromInput('padding',this.value)">
+                            <input type="number" class="control-input" id="paddingInput" min="40" max="250" value="138" onchange="updateFromInput('padding',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="paddingRange" min="138" max="300" value="138" step="5" oninput="updateParamAndPreview('padding',this.value)">
-                    <div class="control-desc">最小留白（預設 138px，調高產品更小但更安全）</div>
+                    <input type="range" id="paddingRange" min="40" max="250" value="138" step="5" oninput="updateParamAndPreview('padding',this.value)">
+                    <div class="control-desc">最小留白門檻（40–250px，低於 138px 紅色警示）</div>
                 </div>
                 <div class="control-group">
                     <div class="control-label">
@@ -1965,8 +1965,8 @@
             }
 
             // ===== 智慧邊界偵測模式 =====
-            const MIN_PADDING = params.manualMinPadding || 138; // 使用者可覆蓋，預設 138px
-            const extraScale = (params.scale || 100) / 100;     // 使用者額外縮放倍率（預設 1.0 = 不額外縮）
+            const MIN_PADDING = params.manualMinPadding || 138;
+            const extraScale = (params.scale || 100) / 100;
 
             // 1. 偵測背景色（四角平均）
             const tempCanvas = document.createElement('canvas');
@@ -1978,7 +1978,7 @@
             corners.forEach(c=>{bgR+=c.data[0];bgG+=c.data[1];bgB+=c.data[2];});
             bgR=Math.round(bgR/4); bgG=Math.round(bgG/4); bgB=Math.round(bgB/4);
 
-            // 2. 偵測四邊實際內容邊界
+            // 2. 偵測四邊實際留白
             const bounds = detectContentBounds(tempCanvas, bgR, bgG, bgB);
             const origPad = {
                 top:    bounds.top,
@@ -1992,60 +1992,89 @@
             const contentW = bounds.right - bounds.left;
             const contentH = bounds.bottom - bounds.top;
 
-            // 4. 計算目標尺寸：內容 + 四邊各 MIN_PADDING
-            const neededW = contentW + MIN_PADDING * 2;
-            const neededH = contentH + MIN_PADDING * 2;
+            // 4. 計算各邊缺口：只有不足 MIN_PADDING 的邊才需要縮放
+            //    縮放比計算：讓不足的邊縮到剛好達標
+            //    若某邊原有留白為 P，縮放比為 S，縮後留白 = P*S + (1-S)*邊寬/2... 不對
+            //    正確：縮放整張圖後，內容變小，留白 = (1000 - contentW*S) / 2 (置中情況)
+            //    但這裡不是置中，是貼著某邊縮。
+            //
+            //    更簡單的思路：
+            //    縮放比 S 讓最不足的邊剛好 = MIN_PADDING
+            //    不足的邊：原始留白 < MIN_PADDING
+            //    需要的縮放：讓 origPad[side] 在縮放後仍保留，同時畫布內剩餘空間補足 MIN_PADDING
+            //
+            //    實際上，縮放 S 後：
+            //      縮放後整圖尺寸 = ow*S × oh*S
+            //      各邊留白 = origPad[side] * S
+            //      但畫布是 1000×1000，縮放後圖貼在畫布上，多出的空間是背景色延伸
+            //
+            //    所以：縮放後某邊留白 = origPad[side] * S
+            //    要讓最窄邊 >= MIN_PADDING：
+            //      S >= MIN_PADDING / min(origPad)
+            //    但 S <= 1（不放大）
+            //    同時縮放後整圖不能超出畫布：ow*S <= 1000 且 oh*S <= 1000
 
-            // 5. 決定是否需要縮放（只有 neededW 或 neededH 超過 TARGET_SIZE 才縮）
-            let contentScale = extraScale; // 先套使用者額外縮放
-            const neededW2 = contentW * extraScale + MIN_PADDING * 2;
-            const neededH2 = contentH * extraScale + MIN_PADDING * 2;
-            if (neededW2 > TARGET_SIZE || neededH2 > TARGET_SIZE) {
-                contentScale = Math.min(
-                    (TARGET_SIZE - MIN_PADDING * 2) / contentW,
-                    (TARGET_SIZE - MIN_PADDING * 2) / contentH
-                );
-                addLog(`  ⚠️ 內容過大，縮放至 ${(contentScale*100).toFixed(1)}%`);
-            } else {
-                addLog(`  ✅ 縮放: ${(contentScale*100).toFixed(1)}%，留白: ${MIN_PADDING}px`);
-            }
+            // 找各邊需要的最小縮放比
+            let requiredScale = 1.0; // 預設不縮放
+            const sides = ['top','bottom','left','right'];
+            sides.forEach(side => {
+                if (origPad[side] < MIN_PADDING && origPad[side] >= 0) {
+                    // 這邊不足，需要縮放讓它達標
+                    // 縮放後此邊留白 = origPad[side] * S >= MIN_PADDING
+                    // → S >= MIN_PADDING / origPad[side]（若 origPad=0 則需特殊處理）
+                    if (origPad[side] === 0) {
+                        // 完全貼邊，縮放本身無法製造留白，需要靠縮整圖讓邊緣退縮
+                        // 縮放後整圖貼畫布：留白 = (1000 - ow*S)/2 （若置中）
+                        // 但我們不置中，所以用內容邏輯：縮放後內容寬 = contentW*S，畫布 1000px，兩側留白各 (1000-contentW*S)/2
+                        // 要 >= MIN_PADDING：S <= (1000 - 2*MIN_PADDING) / contentW
+                        const sNeeded = (TARGET_SIZE - 2 * MIN_PADDING) / (side === 'left' || side === 'right' ? contentW : contentH);
+                        requiredScale = Math.min(requiredScale, sNeeded);
+                    } else {
+                        const sNeeded = MIN_PADDING / origPad[side];
+                        if (sNeeded < 1) requiredScale = Math.min(requiredScale, sNeeded);
+                        else {
+                            // origPad < MIN_PADDING 且 sNeeded >= 1，代表需要放大才能達標，但放大不合理
+                            // 改用內容置中邏輯
+                            const sNeeded2 = (TARGET_SIZE - 2 * MIN_PADDING) / (side === 'left' || side === 'right' ? contentW : contentH);
+                            requiredScale = Math.min(requiredScale, sNeeded2);
+                        }
+                    }
+                }
+            });
 
-            // 6. 計算縮放後的原圖尺寸及貼上位置
+            // 同時確保縮放後整圖不超出畫布
+            requiredScale = Math.min(requiredScale, TARGET_SIZE / ow, TARGET_SIZE / oh);
+
+            // 套用使用者額外縮放（extraScale < 1 = 更小，> 1 = 更大但不超過不縮放的上限）
+            const contentScale = Math.min(requiredScale * extraScale, TARGET_SIZE / ow, TARGET_SIZE / oh);
+
+            addLog(`  📐 縮放比: ${(contentScale*100).toFixed(1)}% (自動=${(requiredScale*100).toFixed(1)}%)`);
+
+            // 5. 計算縮放後尺寸
             const scaledOrigW = Math.round(ow * contentScale);
             const scaledOrigH = Math.round(oh * contentScale);
-
-            // 縮放後各邊留白
             const scaledPad = {
                 top:    Math.round(origPad.top * contentScale),
                 bottom: Math.round(origPad.bottom * contentScale),
                 left:   Math.round(origPad.left * contentScale),
                 right:  Math.round(origPad.right * contentScale)
             };
-
-            // 縮放後內容尺寸
             const scaledContentW = Math.round(contentW * contentScale);
             const scaledContentH = Math.round(contentH * contentScale);
 
-            // 四邊統一補 MIN_PADDING（從內容邊緣算起，不保留原有多餘留白）
-            // 這樣產品始終最大化，留白剛好達標
-            const padTop    = MIN_PADDING;
-            const padBottom = MIN_PADDING;
-            const padLeft   = MIN_PADDING;
-            const padRight  = MIN_PADDING;
+            // 6. 計算貼上位置：讓各邊留白剛好達到 MIN_PADDING（不足的補背景色，多的保留）
+            //    先算內容應該放在哪裡（內容左上角在畫布上的位置）
+            //    水平：若左邊縮後留白 >= MIN_PADDING，內容維持原位；若不足，把內容推到左邊 MIN_PADDING 處
+            const contentX = Math.max(MIN_PADDING, scaledPad.left);
+            const contentY = Math.max(MIN_PADDING, scaledPad.top);
 
-            // 最終畫布尺寸（強制 TARGET_SIZE）
+            // 整張縮放後原圖的貼上位置
+            const pasteX = contentX - scaledPad.left;
+            const pasteY = contentY - scaledPad.top;
+
+            // 最終畫布
             canvas.width  = TARGET_SIZE;
             canvas.height = TARGET_SIZE;
-
-            // 內容置中，四邊各 138px
-            const totalW = padLeft + scaledContentW + padRight;
-            const totalH = padTop  + scaledContentH + padBottom;
-            // pasteX/Y 是縮放後「整張原圖」的左上角位置
-            // 內容在原圖中的偏移是 scaledPad.left / scaledPad.top
-            const contentStartX = Math.floor((TARGET_SIZE - totalW) / 2) + padLeft;
-            const contentStartY = Math.floor((TARGET_SIZE - totalH) / 2) + padTop;
-            const pasteX = contentStartX - Math.round(bounds.left * contentScale);
-            const pasteY = contentStartY - Math.round(bounds.top  * contentScale);
 
             // 7. 填背景色
             ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
@@ -2076,10 +2105,10 @@
 
             // 10. 實際輸出四邊留白（從內容邊緣到畫布邊緣）
             const finalPad = {
-                top:    contentStartY,
-                bottom: TARGET_SIZE - (contentStartY + scaledContentH),
-                left:   contentStartX,
-                right:  TARGET_SIZE - (contentStartX + scaledContentW)
+                top:    pasteY + scaledPad.top,
+                bottom: TARGET_SIZE - (pasteY + scaledOrigH - scaledPad.bottom),
+                left:   pasteX + scaledPad.left,
+                right:  TARGET_SIZE - (pasteX + scaledOrigW - scaledPad.right)
             };
             addLog(`  ✅ 輸出留白 上${finalPad.top} 下${finalPad.bottom} 左${finalPad.left} 右${finalPad.right} px`);
 
