@@ -1968,15 +1968,13 @@
             const MIN_PADDING = params.manualMinPadding || 138;
             const extraScale = (params.scale || 100) / 100;
 
-            // 1. 偵測背景色（四角平均）
+            // 1. 偵測背景色（四角 5×5 平均，比單點更穩定）
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = ow; tempCanvas.height = oh;
             const tempCtx = tempCanvas.getContext('2d');
             tempCtx.drawImage(img, 0, 0);
-            const corners = [tempCtx.getImageData(0,0,1,1),tempCtx.getImageData(ow-1,0,1,1),tempCtx.getImageData(0,oh-1,1,1),tempCtx.getImageData(ow-1,oh-1,1,1)];
-            let bgR=0,bgG=0,bgB=0;
-            corners.forEach(c=>{bgR+=c.data[0];bgG+=c.data[1];bgB+=c.data[2];});
-            bgR=Math.round(bgR/4); bgG=Math.round(bgG/4); bgB=Math.round(bgB/4);
+            const bgColor = sampleBgColor(tempCtx, ow, oh);
+            let bgR = bgColor.r, bgG = bgColor.g, bgB = bgColor.b;
 
             // 2. 偵測四邊實際留白
             const bounds = detectContentBounds(tempCanvas, bgR, bgG, bgB);
@@ -1992,30 +1990,24 @@
             addLog(`  🔍 原始留白 上${origPad.top} 下${origPad.bottom} 左${origPad.left} 右${origPad.right} px`);
             addLog(`  📦 內容 ${contentW}×${contentH}`);
 
-            // 3. 計算縮放比
-            // 以「內容」為基準：縮放後內容必須能放進 (TARGET_SIZE - 2*MIN_PADDING) 的空間
-            // S = min((TARGET - 2*MIN) / contentW, (TARGET - 2*MIN) / contentH)
-            // 若 S >= 1 代表內容本來就放得下，不需縮放（S=1）
-            const autoScale = Math.min(
-                (TARGET_SIZE - 2 * MIN_PADDING) / contentW,
-                (TARGET_SIZE - 2 * MIN_PADDING) / contentH,
-                1.0  // 不放大
-            );
+            // 3. 計算縮放比（以內容為基準，確保四邊 >= MIN_PADDING）
+            // contentW * S + 2*MIN_PADDING <= TARGET_SIZE
+            // S <= (TARGET_SIZE - 2*MIN_PADDING) / contentW
+            const maxScaleW = (TARGET_SIZE - 2 * MIN_PADDING) / contentW;
+            const maxScaleH = (TARGET_SIZE - 2 * MIN_PADDING) / contentH;
+            const autoScale = Math.min(maxScaleW, maxScaleH, 1.0);
             const contentScale = Math.min(Math.max(autoScale * extraScale, 0.05), 1.0);
             addLog(`  📐 縮放: ${(contentScale*100).toFixed(1)}%`);
 
-            // 4. 縮放後「內容」的尺寸
+            // 4. 縮放後內容尺寸
             const scaledContentW = Math.round(contentW * contentScale);
             const scaledContentH = Math.round(contentH * contentScale);
 
-            // 5. 內容置中於畫布
-            // 內容左上角在畫布上的座標
-            const contentX = Math.floor((TARGET_SIZE - scaledContentW) / 2);
-            const contentY = Math.floor((TARGET_SIZE - scaledContentH) / 2);
+            // 5. 內容置中，並強制 >= MIN_PADDING
+            const contentX = Math.max(MIN_PADDING, Math.floor((TARGET_SIZE - scaledContentW) / 2));
+            const contentY = Math.max(MIN_PADDING, Math.floor((TARGET_SIZE - scaledContentH) / 2));
 
             // 6. 整張縮放後原圖的貼上座標
-            // 原圖中內容從 (bounds.left, bounds.top) 開始
-            // 縮放後內容在原圖中從 (bounds.left*S, bounds.top*S) 開始
             const scaledOrigW = Math.round(ow * contentScale);
             const scaledOrigH = Math.round(oh * contentScale);
             const pasteX = contentX - Math.round(bounds.left * contentScale);
@@ -2089,7 +2081,7 @@
             const ctx = canvas.getContext('2d');
             const w = canvas.width, h = canvas.height;
             const data = ctx.getImageData(0, 0, w, h).data;
-            const threshold = 30;
+            const threshold = 40; // 放寬閾值，避免 JPEG 壓縮雜訊誤判
 
             function isDiff(x, y) {
                 const i = (y * w + x) * 4;
@@ -2115,6 +2107,31 @@
                 for (let y=0; y<h; y++) { if (isDiff(x,y)) { right=x; break outer; } }
             }
             return { top, bottom, left, right };
+        }
+
+        // 取 canvas 角落 5×5 區域的平均色，比單點更穩定
+        function sampleBgColor(ctx, w, h) {
+            const size = Math.min(5, w, h);
+            const regions = [
+                ctx.getImageData(0, 0, size, size),
+                ctx.getImageData(w-size, 0, size, size),
+                ctx.getImageData(0, h-size, size, size),
+                ctx.getImageData(w-size, h-size, size, size)
+            ];
+            let r=0, g=0, b=0, count=0;
+            regions.forEach(region => {
+                for (let i=0; i<region.data.length; i+=4) {
+                    r += region.data[i];
+                    g += region.data[i+1];
+                    b += region.data[i+2];
+                    count++;
+                }
+            });
+            return {
+                r: Math.round(r/count),
+                g: Math.round(g/count),
+                b: Math.round(b/count)
+            };
         }
 
         function analyzeEdgeSafety(canvas,bgR,bgG,bgB) {
