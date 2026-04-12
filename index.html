@@ -1686,7 +1686,7 @@
                 </div>
                 <div class="control-group">
                     <div class="control-label">
-                        <span>留白距離</span>
+                        <span>留白門檻</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="paddingValue">90px</span>
                             <input type="number" class="control-input" id="paddingInput" min="40" max="250" value="138" onchange="updateFromInput('padding',this.value)">
@@ -1849,7 +1849,7 @@
                                 result = await processPromoImage(img, sanitizedName, e.target.result, file.name, { resize: taskResize, compress: taskCompress, format: taskFormat, origMime });
                             } else {
                                 result = await transformImage(img, sanitizedName, e.target.result, file.name, {
-                                    scale: 115, padding: DEFAULT_PADDING, quality: 90,
+                                    scale: 100, padding: DEFAULT_PADDING, quality: 90,
                                     resize: taskResize, content: taskContent, compress: taskCompress, format: taskFormat, origMime
                                 });
                             }
