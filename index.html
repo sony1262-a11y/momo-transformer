@@ -1689,10 +1689,10 @@
                         <span>留白門檻</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="paddingValue">90px</span>
-                            <input type="number" class="control-input" id="paddingInput" min="40" max="250" value="138" onchange="updateFromInput('padding',this.value)">
+                            <input type="number" class="control-input" id="paddingInput" min="40" max="250" value="100" onchange="updateFromInput('padding',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="paddingRange" min="40" max="250" value="138" step="5" oninput="updateParamAndPreview('padding',this.value)">
+                    <input type="range" id="paddingRange" min="40" max="250" value="100" step="5" oninput="updateParamAndPreview('padding',this.value)">
                     <div class="control-desc">最小留白門檻（40–250px，低於 138px 紅色警示）</div>
                 </div>
                 <div class="control-group">
@@ -1970,7 +1970,7 @@
             // 即：ow*S <= 1000，oh*S <= 1000，且 (1000-ow*S)/2 >= MIN_PADDING
             // → ow*S <= 1000 - 2*MIN_PADDING
             // → S <= (1000 - 2*MIN_PADDING) / ow
-            const MIN_PADDING = params.manualMinPadding || 138;
+            const MIN_PADDING = params.manualMinPadding || 100;
             const extraScale  = (params.scale || 100) / 100;
 
             // 1. 背景色（四角平均）
@@ -2402,22 +2402,34 @@
         function openEditorFor(index) {
             const result = processedResults[index];
             if (!result) return;
-            currentEditingImage = result.afterDataUrl;
-            const afterImage = new Image();
-            afterImage.onload = ()=>{ currentEditingOriginalImage = afterImage; };
-            afterImage.src = result.afterDataUrl;
+
+            // 重要：微調要用原始圖，不是處理後的圖
+            if (!result.originalImage) {
+                alert('⚠️ 找不到原始圖片，請重新上傳處理。');
+                return;
+            }
+            currentEditingOriginalImage = result.originalImage;
             currentEditingIndex = index;
-            editorImage.src = result.afterDataUrl;
+            editorImage.src = result.afterDataUrl; // 預覽先顯示處理後的圖
             editorOverlay.classList.add('active');
-            const scale = result.params.scale||100, padding = result.params.manualMinPadding||138, quality = result.params.quality||90;
-            document.getElementById('scaleRange').value = scale;
-            document.getElementById('scaleInput').value = scale;
+
+            const scale   = 100; // 預設不額外縮放
+            const padding = result.params.manualMinPadding || 100; // 當前門檻            const quality = result.params.quality || 90;
+
+            document.getElementById('scaleRange').value  = scale;
+            document.getElementById('scaleInput').value  = scale;
             document.getElementById('paddingRange').value = padding;
             document.getElementById('paddingInput').value = padding;
             document.getElementById('qualityRange').value = quality;
             document.getElementById('qualityInput').value = quality;
-            updateParam('scale',scale); updateParam('padding',padding); updateParam('quality',quality);
-            currentPreviewResult = {...result, params:{...result.params, scale, manualMinPadding: padding, quality}};
+            updateParam('scale', scale);
+            updateParam('padding', padding);
+            updateParam('quality', quality);
+
+            currentPreviewResult = {
+                ...result,
+                params: { ...result.params, scale, manualMinPadding: padding, quality }
+            };
             if (result.finalPad) updateRulers(result.finalPad);
         }
 
@@ -2456,43 +2468,56 @@
             updateParam(param, value);
             document.getElementById(param+'Input').value = value;
             if (!currentEditingOriginalImage) return;
-            if (param==='scale') {
-                const sv=parseInt(value)/100;
-                requestAnimationFrame(()=>{ editorImage.style.transform=`scale(${sv})`; editorImage.style.transition='transform 0.1s ease-out'; });
-            }
-            if (previewUpdateTimer) clearTimeout(previewUpdateTimer);
-            previewUpdateTimer = setTimeout(()=>{
-                requestAnimationFrame(async()=>{
-                    if (isUpdating) return;
-                    isUpdating = true;
-                    const scale=parseInt(document.getElementById('scaleRange').value);
-                    const padding=parseInt(document.getElementById('paddingRange').value);
-                    const quality=parseInt(document.getElementById('qualityRange').value);
-                    try {
-                        const baseParams = currentPreviewResult.params || {};
-                        const result = await transformImage(
-                            currentEditingOriginalImage,
-                            currentPreviewResult.filename,
-                            currentPreviewResult.beforeDataUrl,
-                            currentPreviewResult.originalName,
-                            {
-                                scale, quality,
-                                content: baseParams.content !== false,
-                                compress: baseParams.compress,
-                                format: baseParams.format,
-                                origMime: baseParams.origMime,
-                                forceEdgeExtension: currentPreviewResult.params?.forceEdgeExtension,
-                                manualMinPadding: padding  // 使用者指定的最小留白（覆蓋預設 138px）
-                            }
-                        );
-                        editorImage.style.transform=''; editorImage.style.transition='';
-                        editorImage.src = result.afterDataUrl;
-                        currentPreviewResult = result;
-                        if (result.finalPad) updateRulers(result.finalPad);
-                    } catch(e) { console.error(e); }
-                    isUpdating = false;
+
+            // scale 用 CSS transform 即時視覺回饋（輕量）
+            if (param === 'scale') {
+                const sv = parseInt(value) / 100;
+                requestAnimationFrame(() => {
+                    editorImage.style.transform = `scale(${sv})`;
+                    editorImage.style.transition = 'transform 0.05s ease-out';
                 });
-            }, 300);
+            }
+
+            // 防抖：停止操作 400ms 後才真正重算（避免卡頓）
+            if (previewUpdateTimer) clearTimeout(previewUpdateTimer);
+            previewUpdateTimer = setTimeout(async () => {
+                if (isUpdating) return;
+                isUpdating = true;
+                editorImage.style.opacity = '0.6'; // 處理中提示
+
+                const scale   = parseInt(document.getElementById('scaleRange').value);
+                const padding = parseInt(document.getElementById('paddingRange').value);
+                const quality = parseInt(document.getElementById('qualityRange').value);
+
+                try {
+                    const baseParams = currentPreviewResult.params || {};
+                    const result = await transformImage(
+                        currentEditingOriginalImage,
+                        currentPreviewResult.filename,
+                        currentPreviewResult.beforeDataUrl,
+                        currentPreviewResult.originalName,
+                        {
+                            scale, quality,
+                            content: baseParams.content !== false,
+                            compress: false, // 預覽不壓縮，加快速度
+                            format: baseParams.format,
+                            origMime: baseParams.origMime,
+                            forceEdgeExtension: currentPreviewResult.params?.forceEdgeExtension,
+                            manualMinPadding: padding
+                        }
+                    );
+                    editorImage.style.transform = '';
+                    editorImage.style.transition = '';
+                    editorImage.style.opacity = '1';
+                    editorImage.src = result.afterDataUrl;
+                    currentPreviewResult = { ...result, params: { ...result.params, scale, manualMinPadding: padding, quality } };
+                    if (result.finalPad) updateRulers(result.finalPad);
+                } catch(e) {
+                    console.error(e);
+                    editorImage.style.opacity = '1';
+                }
+                isUpdating = false;
+            }, 400);
         }
 
         function applyAndUpdate() {
@@ -2512,7 +2537,7 @@
 
         function resetParams() {
             ['scale','padding','quality'].forEach(p=>{
-                const def = p==='padding'?DEFAULT_PADDING:(p==='scale'?100:90);
+                const def = p==='padding' ? 100 : (p==='scale' ? 100 : 90);
                 document.getElementById(p+'Range').value=def;
                 document.getElementById(p+'Input').value=def;
                 updateParamAndPreview(p,def);
