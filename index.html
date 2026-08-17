@@ -1678,94 +1678,30 @@
                         <span>內容縮放</span>
                         <div class="control-value-wrapper">
                             <span class="control-value" id="scaleValue">100%</span>
-                            <input type="number" class="control-input" id="scaleInput" min="70" max="200" value="100" onchange="updateFromInput('scale',this.value)">
+                            <input type="number" class="control-input" id="scaleInput" min="50" max="150" value="100" onchange="updateFromInput('scale',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="scaleRange" min="70" max="200" value="100" step="5" oninput="updateParamAndPreview('scale',this.value)">
-                    <div class="control-desc">調整內容大小（70–200%，每次增減 5%）</div>
+                    <input type="range" id="scaleRange" min="50" max="150" value="100" step="5" oninput="updateParamAndPreview('scale',this.value)">
+                    <div class="control-desc">調整產品大小（50–150%）。縮小可增加留白，放大會減少留白</div>
                 </div>
                 <div class="control-group">
                     <div class="control-label">
                         <span>留白門檻</span>
                         <div class="control-value-wrapper">
-                            <span class="control-value" id="paddingValue">90px</span>
-                            <input type="number" class="control-input" id="paddingInput" min="40" max="250" value="100" onchange="updateFromInput('padding',this.value)">
+                            <span class="control-value" id="paddingValue">138px</span>
+                            <input type="number" class="control-input" id="paddingInput" min="60" max="250" value="138" onchange="updateFromInput('padding',this.value)">
                         </div>
                     </div>
-                    <input type="range" id="paddingRange" min="40" max="250" value="100" step="5" oninput="updateParamAndPreview('padding',this.value)">
-                    <div class="control-desc">最小留白門檻（40–250px，低於 138px 紅色警示）</div>
-                </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>輸出品質</span>
-                        <div class="control-value-wrapper">
-                            <span class="control-value" id="qualityValue">90%</span>
-                            <input type="number" class="control-input" id="qualityInput" min="70" max="100" value="90" onchange="updateFromInput('quality',this.value)">
-                        </div>
-                    </div>
-                    <input type="range" id="qualityRange" min="70" max="100" value="90" step="5" oninput="updateParamAndPreview('quality',this.value)">
-                    <div class="control-desc">品質越高檔案越大</div>
-                </div>
-
-                <!-- 裁切區塊 -->
-                <div class="control-group" style="border-color:var(--yellow);background:#FFFBEE;">
-                    <div style="font-size:11px;font-weight:900;color:var(--black);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="#1A1A1A" stroke-width="1.5" stroke-dasharray="3 2"/><path d="M4 4L10 10M10 4L4 10" stroke="#D94F3D" stroke-width="1.5" stroke-linecap="round"/></svg>
-                        空白裁切（上下左右各裁多少 px）
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                        <div>
-                            <div class="control-label" style="margin-bottom:6px;">
-                                <span style="font-size:11px;">上方裁切</span>
-                                <div class="control-value-wrapper">
-                                    <span class="control-value" id="cropTopValue">0px</span>
-                                    <input type="number" class="control-input" id="cropTopInput" min="0" max="400" value="0" onchange="updateFromInput('cropTop',this.value)">
-                                </div>
-                            </div>
-                            <input type="range" id="cropTopRange" min="0" max="400" value="0" step="10" oninput="updateParamAndPreview('cropTop',this.value)">
-                        </div>
-                        <div>
-                            <div class="control-label" style="margin-bottom:6px;">
-                                <span style="font-size:11px;">下方裁切</span>
-                                <div class="control-value-wrapper">
-                                    <span class="control-value" id="cropBottomValue">0px</span>
-                                    <input type="number" class="control-input" id="cropBottomInput" min="0" max="400" value="0" onchange="updateFromInput('cropBottom',this.value)">
-                                </div>
-                            </div>
-                            <input type="range" id="cropBottomRange" min="0" max="400" value="0" step="10" oninput="updateParamAndPreview('cropBottom',this.value)">
-                        </div>
-                        <div>
-                            <div class="control-label" style="margin-bottom:6px;">
-                                <span style="font-size:11px;">左方裁切</span>
-                                <div class="control-value-wrapper">
-                                    <span class="control-value" id="cropLeftValue">0px</span>
-                                    <input type="number" class="control-input" id="cropLeftInput" min="0" max="400" value="0" onchange="updateFromInput('cropLeft',this.value)">
-                                </div>
-                            </div>
-                            <input type="range" id="cropLeftRange" min="0" max="400" value="0" step="10" oninput="updateParamAndPreview('cropLeft',this.value)">
-                        </div>
-                        <div>
-                            <div class="control-label" style="margin-bottom:6px;">
-                                <span style="font-size:11px;">右方裁切</span>
-                                <div class="control-value-wrapper">
-                                    <span class="control-value" id="cropRightValue">0px</span>
-                                    <input type="number" class="control-input" id="cropRightInput" min="0" max="400" value="0" onchange="updateFromInput('cropRight',this.value)">
-                                </div>
-                            </div>
-                            <input type="range" id="cropRightRange" min="0" max="400" value="0" step="10" oninput="updateParamAndPreview('cropRight',this.value)">
-                        </div>
-                    </div>
-                    <div style="margin-top:8px;font-size:10px;color:#8A6500;font-weight:600;">
-                        💡 適合內容偏橫/縱向時，裁掉多餘空白後重新縮放，讓產品更大
-                    </div>
+                    <input type="range" id="paddingRange" min="60" max="250" value="138" step="5" oninput="updateParamAndPreview('padding',this.value)">
+                    <div class="control-desc">四邊最小留白（MOMO 規格 138px）。低於 138px 時標尺顯示紅色</div>
                 </div>
             </div>
             <div class="editor-actions">
                 <button class="btn btn-green btn-sm" onclick="applyAndUpdate()">✨ 套用變更</button>
-                <button class="btn btn-red btn-sm" onclick="resetParams()">🔄 重置預設</button>
+                <button class="btn btn-red btn-sm" onclick="resetParams()">🔄 重置</button>
             </div>
-            <div style="margin-top:16px;padding:12px;background:var(--white);border:1.5px solid var(--light-gray);border-radius:10px;font-size:11px;color:var(--gray);line-height:1.7;font-weight:600;">
-                💡 拖曳滑桿或直接輸入數值，放開後更新預覽。套用後回主畫面下載。
+            <div style="margin-top:14px;padding:10px 12px;background:var(--white);border:1.5px solid var(--light-gray);border-radius:10px;font-size:11px;color:var(--gray);line-height:1.7;font-weight:600;">
+                💡 放開滑桿後更新預覽。套用後結果卡片同步更新，再下載即可。
             </div>
         </div>
     </div>
@@ -2473,36 +2409,26 @@
         function openEditorFor(index) {
             const result = processedResults[index];
             if (!result) return;
+            if (!result.originalImage) return;
 
-            // 重要：微調要用原始圖，不是處理後的圖
-            if (!result.originalImage) {
-                alert('⚠️ 找不到原始圖片，請重新上傳處理。');
-                return;
-            }
             currentEditingOriginalImage = result.originalImage;
             currentEditingIndex = index;
-            editorImage.src = result.afterDataUrl; // 預覽先顯示處理後的圖
+            editorImage.src = result.afterDataUrl;
             editorOverlay.classList.add('active');
 
-            const scale   = 100; // 預設不額外縮放
-            const padding = result.params.manualMinPadding || 100; // 當前門檻            const quality = result.params.quality || 90;
+            const scale   = 100;
+            const padding = result.params.manualMinPadding || 138;
 
             document.getElementById('scaleRange').value  = scale;
             document.getElementById('scaleInput').value  = scale;
             document.getElementById('paddingRange').value = padding;
             document.getElementById('paddingInput').value = padding;
-            document.getElementById('qualityRange').value = quality;
-            document.getElementById('qualityInput').value = quality;
             updateParam('scale', scale);
             updateParam('padding', padding);
-            updateParam('quality', quality);
 
-            currentPreviewResult = {
-                ...result,
-                params: { ...result.params, scale, manualMinPadding: padding, quality }
-            };
+            currentPreviewResult = { ...result, params: { ...result.params, scale, manualMinPadding: padding, quality: 90 } };
             if (result.finalPad) updateRulers(result.finalPad);
-            bindSliderRelease(); // 綁定放開事件
+            bindSliderRelease();
         }
 
         function updateRulers(finalPad) {
@@ -2544,22 +2470,12 @@
 
         // 滑桿放開時才真正重算
         function bindSliderRelease() {
-            const allSliders = ['scaleRange','paddingRange','qualityRange','cropTopRange','cropBottomRange','cropLeftRange','cropRightRange'];
-            allSliders.forEach(id => {
+            [{ id: 'scaleRange', param: 'scale' }, { id: 'paddingRange', param: 'padding' }].forEach(({ id, param }) => {
                 const el = document.getElementById(id);
-                if (!el) return;
-                // 移除舊的事件避免重複綁定
-                const newEl = el.cloneNode(true);
-                el.parentNode.replaceChild(newEl, el);
-                // 重新綁定 oninput
-                const param = id.replace('Range','');
-                newEl.addEventListener('input', () => updateParamAndPreview(param, newEl.value));
-                // mouseup/touchend 才重算
-                ['mouseup','touchend'].forEach(evt => {
-                    newEl.addEventListener(evt, () => {
-                        if (previewUpdateTimer) clearTimeout(previewUpdateTimer);
-                        triggerPreviewUpdate();
-                    });
+                if (!el || el._releaseBound) return;
+                el._releaseBound = true;
+                ['mouseup', 'touchend'].forEach(evt => {
+                    el.addEventListener(evt, () => triggerPreviewUpdate());
                 });
             });
         }
@@ -2569,13 +2485,8 @@
             isUpdating = true;
             editorImage.style.opacity = '0.5';
 
-            const scale       = parseInt(document.getElementById('scaleRange')?.value || 100);
-            const padding     = parseInt(document.getElementById('paddingRange')?.value || 138);
-            const quality     = parseInt(document.getElementById('qualityRange')?.value || 90);
-            const cropTop     = parseInt(document.getElementById('cropTopRange')?.value || 0);
-            const cropBottom  = parseInt(document.getElementById('cropBottomRange')?.value || 0);
-            const cropLeft    = parseInt(document.getElementById('cropLeftRange')?.value || 0);
-            const cropRight   = parseInt(document.getElementById('cropRightRange')?.value || 0);
+            const scale   = parseInt(document.getElementById('scaleRange')?.value || 100);
+            const padding = parseInt(document.getElementById('paddingRange')?.value || 138);
 
             try {
                 const baseParams = currentPreviewResult.params || {};
@@ -2585,14 +2496,13 @@
                     currentPreviewResult.beforeDataUrl,
                     currentPreviewResult.originalName,
                     {
-                        scale, quality,
+                        scale, quality: 90,
                         content: baseParams.content !== false,
                         compress: false,
                         format: baseParams.format,
                         origMime: baseParams.origMime,
                         forceEdgeExtension: currentPreviewResult.params?.forceEdgeExtension,
-                        manualMinPadding: padding,
-                        cropTop, cropBottom, cropLeft, cropRight
+                        manualMinPadding: padding
                     }
                 );
                 editorImage.style.transform = '';
@@ -2601,7 +2511,7 @@
                 editorImage.src = result.afterDataUrl;
                 currentPreviewResult = {
                     ...result,
-                    params: { ...result.params, scale, manualMinPadding: padding, quality, cropTop, cropBottom, cropLeft, cropRight }
+                    params: { ...result.params, scale, manualMinPadding: padding, quality: 90 }
                 };
                 if (result.finalPad) updateRulers(result.finalPad);
             } catch(e) {
@@ -2640,46 +2550,28 @@
                     <div class="summary-item"><div class="summary-label">留白</div><div class="summary-value">${currentPreviewResult.padding}</div></div>
                     <div class="summary-item"><div class="summary-label">大小</div><div class="summary-value">${currentPreviewResult.afterSize}</div></div>
                     <div class="summary-item"><div class="summary-label">格式</div><div class="summary-value">JPG</div></div>`;
-                // 更新四邊留白顯示
-                if (currentPreviewResult.finalPad) {
-                    const fp = currentPreviewResult.finalPad;
-                    const REQUIRED = 138;
-                    ['top','bottom','left','right'].forEach(side => {
-                        const dirMap = {top:'上',bottom:'下',left:'左',right:'右'};
-                        const mItem = elem.querySelector(`.margin-item:nth-child(${['top','bottom','left','right'].indexOf(side)+1})`);
-                        if (!mItem) return;
-                        mItem.querySelector('.margin-val').textContent = fp[side] + 'px';
-                        mItem.className = `margin-item ${fp[side] >= REQUIRED ? 'ok' : 'warn'}`;
-                    });
-                }
             }
-            // 視覺回饋：按鈕短暫變綠
-            const btn = document.querySelector('.editor-actions .btn-green');
+            addLog(`✅ 微調已套用: ${currentPreviewResult.filename}`, 'success');
+            // 按鈕視覺回饋
+            const btn = document.querySelector('#editorOverlay .btn-green');
             if (btn) {
                 const orig = btn.textContent;
                 btn.textContent = '✅ 已套用！';
-                btn.style.background = '#2A7A4A';
-                setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+                btn.disabled = true;
+                setTimeout(() => {
+                    btn.textContent = orig;
+                    btn.disabled = false;
+                }, 1500);
             }
-            closeEditor();
         }
 
         function resetParams() {
-            const defaults = { scale: 100, padding: 138, quality: 90 };
-            Object.entries(defaults).forEach(([p, def]) => {
-                document.getElementById(p+'Range').value = def;
-                document.getElementById(p+'Input').value = def;
-                updateParam(p, def);
-            });
-            // 裁切全部歸零
-            ['cropTop','cropBottom','cropLeft','cropRight'].forEach(p => {
-                const r = document.getElementById(p+'Range');
-                const i = document.getElementById(p+'Input');
-                if (r) r.value = 0;
-                if (i) i.value = 0;
-                updateParam(p, 0);
-            });
-            // 放開後重算
+            document.getElementById('scaleRange').value  = 100;
+            document.getElementById('scaleInput').value  = 100;
+            document.getElementById('paddingRange').value = 138;
+            document.getElementById('paddingInput').value = 138;
+            updateParam('scale', 100);
+            updateParam('padding', 138);
             triggerPreviewUpdate();
         }
 
