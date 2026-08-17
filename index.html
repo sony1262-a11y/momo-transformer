@@ -1266,8 +1266,30 @@
             .header-inner { flex-direction: column; align-items: flex-start; }
         }
 
-        /* Decorative blob */
-        .deco-blob {
+        /* Toast 通知 */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--black);
+            color: var(--yellow);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 900;
+            font-size: 14px;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
             position: fixed;
             border-radius: 50%;
             opacity: 0.06;
@@ -1277,6 +1299,9 @@
     </style>
 </head>
 <body>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
 
     <!-- Decorative blobs -->
     <div class="deco-blob" style="width:400px;height:400px;background:var(--yellow);top:-100px;right:-100px;"></div>
@@ -2357,7 +2382,7 @@
             const result = processedResults[index];
             if (!result) return;
             if (!result.originalImage) {
-                alert('⚠️ 找不到原始圖片，請重新上傳處理。');
+                showToast('⚠️ 找不到原始圖片，請重新上傳');
                 return;
             }
             const btn = document.querySelector(`#result-${index} .edge-btn-extend`);
@@ -2376,7 +2401,7 @@
             const result = processedResults[index];
             if (!result) return;
             if (!result.originalImage) {
-                alert('⚠️ 找不到原始圖片，請重新上傳處理。');
+                showToast('⚠️ 找不到原始圖片，請重新上傳');
                 return;
             }
             const btn = document.querySelector(`#result-${index} .edge-btn-no-extend`);
@@ -2538,6 +2563,13 @@
             // cropTop/Bottom/Left/Right 和 quality 拖曳時不做預覽，放開才重算
         }
 
+        function showToast(msg, duration = 2000) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), duration);
+        }
+
         function applyAndUpdate() {
             if (!currentPreviewResult || currentEditingIndex === null) return;
             processedResults[currentEditingIndex] = currentPreviewResult;
@@ -2552,6 +2584,7 @@
                     <div class="summary-item"><div class="summary-label">格式</div><div class="summary-value">JPG</div></div>`;
             }
             addLog(`✅ 微調已套用: ${currentPreviewResult.filename}`, 'success');
+            showToast('✅ 已套用變更！');
             // 按鈕視覺回饋
             const btn = document.querySelector('#editorOverlay .btn-green');
             if (btn) {
@@ -2624,7 +2657,7 @@
             const link=document.createElement('a');
             link.href=url; link.download=`momo_logs_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
-            alert(`📊 已匯出記錄！\n\n成功: ${successfulSpecs.length} 筆\n失敗: ${failedSpecs.length} 筆`);
+            showToast(`📊 已匯出！成功 ${successfulSpecs.length} 筆，失敗 ${failedSpecs.length} 筆`);
         }
 
         function resetAll() {
